@@ -1,0 +1,46 @@
+const menuItems = [
+  {
+    name: 'Hazelnut Cappuccino',
+    description: 'Classic cappuccino elevated with nutty hazelnut syrup and cocoa dusting.',
+    price: '$4.50'
+  },
+  {
+    name: 'Cold Brew Tonic',
+    description: 'Slow steeped cold brew over artisanal tonic and citrus peel.',
+    price: '$5.80'
+  },
+  {
+    name: 'Rose Pistachio Frappe',
+    description: 'Floral rose milk blended with ice, espresso, and crushed pistachio.',
+    price: '$6.20'
+  },
+  {
+    name: 'Spiced Masala Chai',
+    description: 'Slow simmered spices with Assam tea and creamy milk.',
+    price: '$3.80'
+  }
+];
+
+const Menu = () => (
+  <main className="bg-slate-50 py-16">
+    <div className="mx-auto max-w-5xl px-4">
+      <header className="text-center">
+        <h1 className="section-title">Menu Highlights</h1>
+        <p className="section-subtitle">
+          Each beverage is thoughtfully crafted with ethically sourced beans and ingredients.
+        </p>
+      </header>
+      <div className="mt-12 grid gap-6 md:grid-cols-2">
+        {menuItems.map((item) => (
+          <div key={item.name} className="card">
+            <h3 className="text-2xl font-semibold text-slate-900">{item.name}</h3>
+            <p className="mt-3 text-sm text-slate-500">{item.description}</p>
+            <p className="mt-4 text-lg font-semibold text-brand-600">{item.price}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </main>
+);
+
+export default Menu;

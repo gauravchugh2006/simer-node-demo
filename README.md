@@ -1,136 +1,117 @@
-# Cafe Coffee Day — Node.js API + React App
+# Cafe Coffee Day full-stack demo
 
-Project README: a minimal, practical guide to run and develop the Cafe Coffee Day application locally.
+A responsive cafe ordering experience powered by a Node.js middleware API, a MySQL database, and a React front end. The project is optimised for both mobile and desktop users and ships with Docker tooling for local development.
 
-## Overview
-Small full-stack app:
-- Backend: Node.js (Express) API as middleware
-- Database: MySQL in Docker (docker-compose) with user/admin, auth, orders, order tracking tables
-- Frontend: React (mobile + desktop friendly, responsive)
+## Features
 
-## Tech stack
-- Node.js (LTS)
-- Express
-- MySQL (Docker)
-- React (create-react-app / Vite)
-- Sequelize / TypeORM / Knex (choose one for ORM)
-- Docker & Docker Compose
-- Optional: pm2, dotenv
+- **Express API** with JWT authentication, customer registration, admin-ready login, and order management endpoints.
+- **MySQL schema** bootstrapped via Docker entrypoint scripts providing customer/admin accounts and order tracking tables.
+- **React interface** built with Vite, Tailwind CSS utility classes, and a modern responsive layout (hero landing, menu highlights, customer dashboards, and admin controls).
+- **Order workflows** for customers to place orders and monitor statuses, plus admin tools to update progress in real time.
 
-## Repo layout (suggested)
-- /backend — Node API
-    - /src
-    - .env
-    - package.json
-- /frontend — React app
-    - src/
-    - package.json
-- /docker
-    - docker-compose.yml
-    - init-db/ (SQL schema + seed files)
-- README.md
+## Repository structure
 
-## Prerequisites
-- Node.js (16+)
-- npm or yarn
-- Docker & Docker Compose
-- Git
-
-## Environment variables (example .env files)
-Backend (.env):
 ```
-PORT=4000
-DB_HOST=mysql
-DB_PORT=3306
-DB_USER=ccd_user
-DB_PASSWORD=ccd_password
-DB_NAME=ccd_db
-JWT_SECRET=change_this
-```
-Frontend (.env.local):
-```
-REACT_APP_API_URL=http://localhost:4000/api
+.
+├── backend/              # Express API source code
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── .env.example
+│   └── src/
+├── frontend/             # React single-page application
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── .env.example
+│   └── src/
+├── docker-compose.yml    # Orchestrates MySQL, API, and frontend
+└── README.md
 ```
 
-## Docker Compose (high level)
-- Provide a `docker/docker-compose.yml` with at least:
-    - mysql service (image: mysql:8), environment for MYSQL_ROOT_PASSWORD, MYSQL_DATABASE, MYSQL_USER, MYSQL_PASSWORD
-    - volumes for persistence
-    - optional adminer for DB UI
-- Place SQL schema and seed scripts in `docker/init-db` and mount to `/docker-entrypoint-initdb.d/`.
+## Getting started
 
-## Database schema (core tables)
-- users: id, name, email, password_hash, role (user/admin), created_at
-- sessions / tokens (optional)
-- products / menu: id, name, price, category, description, image_url, available
-- orders: id, user_id, total_amount, status, created_at, updated_at
-- order_items: id, order_id, product_id, quantity, price
-- order_tracking: order_id, status, changed_at, note
+> **Prerequisites:** Docker Desktop (or Docker Engine + Compose), Node.js 18+, npm.
 
-Provide SQL files to create tables and seed an admin user.
+1. **Clone & install dependencies**
+   ```bash
+   git clone <repo-url>
+   cd simer-node-demo
+   npm install --prefix backend
+   npm install --prefix frontend
+   ```
 
-## Backend — quick start
-1. cd backend
-2. copy `.env.example` -> `.env` and update values
-3. install deps: `npm install`
-4. run DB (docker-compose): `cd docker && docker-compose up -d`
-5. run migrations / seed (or let init DB scripts run)
-6. start server:
-     - dev: `npm run dev` (nodemon)
-     - prod: `npm start`
-7. API base: `http://localhost:4000/api`
+2. **Configure environment variables**
+   ```bash
+   cp backend/.env.example backend/.env
+   cp frontend/.env.example frontend/.env
+   ```
+   Adjust the `.env` files if you need to customise ports or credentials.
 
-Recommended scripts in package.json: start, dev, migrate, seed, test.
+3. **Launch with Docker Compose**
+   - Start Docker Desktop (or your Docker Engine service) and ensure it is running in **Linux container** mode.
+   - From the project root, run:
+     ```bash
+     docker compose up --build
+     ```
+   - API available at `http://localhost:4000`
+   - Frontend served at `http://localhost:5173`
+   - MySQL exposed on `localhost:3306` (user: `ccd_user`, password: `ccd_password`)
 
-## Frontend — quick start
-1. cd frontend
-2. copy `.env.local` and set `REACT_APP_API_URL`
-3. install: `npm install`
-4. start dev server: `npm start` (or `npm run dev` for Vite)
-5. open `http://localhost:3000`
+4. **Seeded accounts**
+   The SQL bootstrap script creates an administrator account:
+   - Email: `admin@cafecoffeeday.com`
+   - Password: `admin123`
 
-Design notes:
-- Use responsive layout (CSS Grid/Flexbox, media queries)
-- Mobile-first and breakpoints for desktop
-- Provide friendly forms for login/register and order tracking UI
+5. **Direct script usage (without Docker)**
+   ```bash
+   # Backend
+   cd backend
+   npm install
+   npm run dev
 
-## API endpoints (suggested)
-- POST /api/auth/register — register user
-- POST /api/auth/login — login -> returns JWT
-- GET /api/users/me — current user (auth)
-- GET /api/products — menu items
-- POST /api/orders — create order (auth)
-- GET /api/orders/:id — order details (auth + owner or admin)
-- GET /api/orders — list orders (admin or user)
-- PATCH /api/orders/:id/status — update order status (admin)
-- GET /api/orders/:id/tracking — order tracking history
+   # Frontend
+   cd ../frontend
+   npm install
+   npm run dev
+   ```
 
-Use JWT in Authorization header: `Authorization: Bearer <token>`
+## API overview
 
-## Development workflow
-- Use feature branches
-- Run backend and frontend concurrently (concurrently / npm-run-all)
-- Use linting and Prettier
-- Add unit & integration tests for key flows (auth, orders)
+| Method | Endpoint                     | Description                               |
+| ------ | ---------------------------- | ----------------------------------------- |
+| POST   | `/api/auth/register`         | Register a new customer account           |
+| POST   | `/api/auth/login`            | Login and receive a JWT token             |
+| GET    | `/api/orders`                | List orders (customer scoped / admin all) |
+| POST   | `/api/orders`                | Create a new order for the signed-in user |
+| GET    | `/api/orders/:orderId`       | View a single order                       |
+| PATCH  | `/api/orders/:orderId/status`| Update order status (admin only)          |
 
-## Seeding & Admin account
-- Provide seed SQL or scripts to create an admin user:
-    - email: admin@example.com
-    - password: choose secure pass (hashed in DB)
+Authentication is handled via a Bearer token (`Authorization: Bearer <token>`).
+
+## Frontend highlights
+
+- Mobile-first navigation with collapsible menus and quick access CTA buttons.
+- Dedicated login/registration forms with validation feedback.
+- Customer dashboard for order placement and status tracking.
+- Admin dashboard for updating order progress through predefined states.
+
+## Database schema summary
+
+- `users`: stores customer and admin accounts with hashed passwords and roles.
+- `orders`: keeps JSON-encoded order items, pricing, and status timestamps.
+
+The schema is created automatically when the MySQL container starts for the first time.
+
+## Testing & linting
+
+This starter does not include automated tests. Feel free to integrate your preferred testing framework (Vitest/Jest for frontend, Jest/Supertest for backend) and linting (ESLint/Prettier) as enhancements.
 
 ## Troubleshooting
-- DB not ready? Check container logs: `docker-compose logs mysql`
-- Migration errors: ensure DB env variables match docker-compose service names
-- CORS: enable CORS in backend for frontend origin during development
 
-## Next steps / Enhancements
-- Add role-based RBAC for admin operations
-- Add payments integration
-- Add CI pipeline and Dockerfile for backend and frontend
-- Add E2E tests (Cypress / Playwright)
+- **Dependencies fail to install?** Ensure you have network access or configure npm mirrors as needed.
+- **API cannot connect to MySQL?** Confirm the database container is healthy with `docker compose ps` and check credentials in `backend/.env`.
+- **Frontend cannot reach API?** Update `VITE_API_BASE_URL` to the reachable API hostname.
+- **Docker Desktop reports `dockerDesktopLinuxEngine` missing?** Switch Docker Desktop to *Use Linux containers* and confirm the engine is running before re-running `docker compose up --build`.
 
 ## License
-Add a license file (e.g., MIT) as appropriate.
 
-Contact / contributions
-- Open an issue or create a PR with a clear description.
+Released under the MIT license. Feel free to adapt for your own cafe experience.
