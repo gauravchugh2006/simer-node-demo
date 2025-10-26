@@ -47,9 +47,11 @@ A responsive cafe ordering experience powered by a Node.js middleware API, a MyS
    Adjust the `.env` files if you need to customise ports or credentials.
 
 3. **Launch with Docker Compose**
-   ```bash
-   docker-compose up --build
-   ```
+   - Start Docker Desktop (or your Docker Engine service) and ensure it is running in **Linux container** mode.
+   - From the project root, run:
+     ```bash
+     docker compose up --build
+     ```
    - API available at `http://localhost:4000`
    - Frontend served at `http://localhost:5173`
    - MySQL exposed on `localhost:3306` (user: `ccd_user`, password: `ccd_password`)
@@ -106,8 +108,9 @@ This starter does not include automated tests. Feel free to integrate your prefe
 ## Troubleshooting
 
 - **Dependencies fail to install?** Ensure you have network access or configure npm mirrors as needed.
-- **API cannot connect to MySQL?** Confirm the database container is healthy with `docker-compose ps` and check credentials in `backend/.env`.
+- **API cannot connect to MySQL?** Confirm the database container is healthy with `docker compose ps` and check credentials in `backend/.env`.
 - **Frontend cannot reach API?** Update `VITE_API_BASE_URL` to the reachable API hostname.
+- **Docker Desktop reports `dockerDesktopLinuxEngine` missing?** Switch Docker Desktop to *Use Linux containers* and confirm the engine is running before re-running `docker compose up --build`.
 
 ## License
 
