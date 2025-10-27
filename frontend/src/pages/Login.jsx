@@ -32,13 +32,13 @@ const Login = () => {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-16">
+    <main className="page-section flex min-h-screen items-center justify-center px-4">
       <div className="card w-full max-w-md">
-        <h1 className="text-2xl font-semibold text-slate-900">Welcome back</h1>
-        <p className="mt-2 text-sm text-slate-500">Sign in to manage orders and explore new flavours.</p>
+        <h1 className="text-2xl font-semibold text-primary">Welcome back</h1>
+        <p className="mt-2 text-sm text-muted">Sign in to manage orders and explore new flavours.</p>
         <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label className="text-sm font-medium text-slate-600" htmlFor="email">
+            <label className="form-label" htmlFor="email">
               Email
             </label>
             <input
@@ -48,11 +48,11 @@ const Login = () => {
               required
               value={form.email}
               onChange={handleChange}
-              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200"
+              className="form-input mt-1"
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-slate-600" htmlFor="password">
+            <label className="form-label" htmlFor="password">
               Password
             </label>
             <input
@@ -62,7 +62,7 @@ const Login = () => {
               required
               value={form.password}
               onChange={handleChange}
-              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200"
+              className="form-input mt-1"
             />
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
@@ -70,9 +70,9 @@ const Login = () => {
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
-        <p className="mt-4 text-center text-sm text-slate-500">
+        <p className="mt-4 text-center text-sm text-muted">
           New to Cafe Coffee Day?{' '}
-          <Link to="/register" className="font-semibold text-brand-600">
+          <Link to="/register" className="font-semibold text-accent">
             Create an account
           </Link>
         </p>

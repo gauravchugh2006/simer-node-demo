@@ -22,10 +22,14 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  const persist = (payload) => {
+    localStorage.setItem(storageKey, JSON.stringify(payload));
+  };
+
   const login = (payload) => {
     setUser(payload.user);
     setToken(payload.token);
-    localStorage.setItem(storageKey, JSON.stringify(payload));
+    persist(payload);
   };
 
   const logout = () => {
@@ -34,7 +38,18 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem(storageKey);
   };
 
-  const value = useMemo(() => ({ user, token, login, logout }), [user, token]);
+  const updateProfile = (updates) => {
+    setUser((prev) => {
+      const nextUser = { ...(prev || {}), ...updates };
+      persist({ user: nextUser, token });
+      return nextUser;
+    });
+  };
+
+  const value = useMemo(
+    () => ({ user, token, login, logout, updateProfile }),
+    [user, token]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
