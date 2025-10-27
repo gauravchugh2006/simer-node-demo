@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import pool from '../utils/db.js';
 import { hashPassword, verifyPassword } from '../utils/password.js';
+import { logError, logInfo } from '../utils/logger.js';
 
 const generateToken = (user) =>
   jwt.sign(
@@ -33,13 +34,14 @@ export const register = async (req, res) => {
     );
 
     const token = generateToken({ id: result.insertId, email, role: 'customer' });
+    logInfo('User registered successfully', { email });
     return res.status(201).json({
       message: 'Registration successful.',
       token,
       user: { id: result.insertId, name, email, role: 'customer' }
     });
   } catch (error) {
-    console.error('Register error', error);
+    logError('Register error', error, { email });
     return res.status(500).json({ message: 'Unable to register user at this time.' });
   }
 };
@@ -66,13 +68,14 @@ export const login = async (req, res) => {
     }
 
     const token = generateToken(user);
+    logInfo('User login successful', { email });
     return res.json({
       message: 'Login successful.',
       token,
       user: { id: user.id, name: user.name, email: user.email, role: user.role }
     });
   } catch (error) {
-    console.error('Login error', error);
+    logError('Login error', error, { email });
     return res.status(500).json({ message: 'Unable to login at this time.' });
   }
 };

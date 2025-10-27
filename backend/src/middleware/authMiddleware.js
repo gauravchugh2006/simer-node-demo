@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { logError } from '../utils/logger.js';
 
 export const authenticate = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -12,7 +13,7 @@ export const authenticate = (req, res, next) => {
     req.user = payload;
     next();
   } catch (error) {
-    console.error('Auth error', error);
+    logError('Auth error', error);
     return res.status(401).json({ message: 'Invalid or expired token.' });
   }
 };
