@@ -22,7 +22,7 @@ const menuItems = [
 ];
 
 const Menu = () => (
-  <main className="bg-slate-50 py-16">
+  <main className="page-section">
     <div className="mx-auto max-w-5xl px-4">
       <header className="text-center">
         <h1 className="section-title">Menu Highlights</h1>
@@ -33,9 +33,9 @@ const Menu = () => (
       <div className="mt-12 grid gap-6 md:grid-cols-2">
         {menuItems.map((item) => (
           <div key={item.name} className="card">
-            <h3 className="text-2xl font-semibold text-slate-900">{item.name}</h3>
-            <p className="mt-3 text-sm text-slate-500">{item.description}</p>
-            <p className="mt-4 text-lg font-semibold text-brand-600">{item.price}</p>
+            <h3 className="text-2xl font-semibold text-primary">{item.name}</h3>
+            <p className="mt-3 text-sm text-muted">{item.description}</p>
+            <p className="mt-4 text-lg font-semibold text-accent">{item.price}</p>
           </div>
         ))}
       </div>

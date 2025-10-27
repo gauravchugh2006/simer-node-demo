@@ -38,7 +38,7 @@ const AdminDashboard = () => {
   }
 
   return (
-    <main className="bg-slate-50 py-16">
+    <main className="page-section">
       <div className="mx-auto max-w-6xl px-4">
         <header className="mb-10 text-center">
           <h1 className="section-title">Admin control centre</h1>
@@ -47,7 +47,7 @@ const AdminDashboard = () => {
           </p>
         </header>
 
-        {loading && <p className="text-sm text-slate-500">Loading orders...</p>}
+        {loading && <p className="text-sm text-muted">Loading orders...</p>}
         {error && <p className="text-sm text-red-500">{error}</p>}
 
         <div className="mt-6 grid gap-4">
@@ -55,9 +55,9 @@ const AdminDashboard = () => {
             <div key={order.id} className="card space-y-4">
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-slate-900">Order #{order.id}</p>
-                  <p className="text-sm text-slate-500">Customer: {order.customer_name || order.customerId}</p>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm font-semibold text-primary">Order #{order.id}</p>
+                  <p className="text-sm text-muted">Customer: {order.customer_name || order.customerId}</p>
+                  <p className="text-sm text-muted">
                     {Array.isArray(order.items)
                       ? order.items.map((item) => item.name).join(', ')
                       : (() => {
@@ -69,8 +69,8 @@ const AdminDashboard = () => {
                         })()}
                   </p>
                 </div>
-                <div className="text-right text-sm text-slate-500">
-                  <p className="font-semibold text-brand-600">${Number(order.total_price || order.totalPrice).toFixed(2)}</p>
+                <div className="text-right text-sm text-muted">
+                  <p className="font-semibold text-accent">${Number(order.total_price || order.totalPrice).toFixed(2)}</p>
                   <p>Placed {new Date(order.created_at || order.createdAt).toLocaleString()}</p>
                 </div>
               </div>
@@ -83,8 +83,8 @@ const AdminDashboard = () => {
                     disabled={updatingId === order.id}
                     className={`rounded-full border px-4 py-1.5 text-sm font-medium transition ${
                       order.status === status
-                        ? 'border-brand-500 bg-brand-500 text-white'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-brand-500 hover:text-brand-600'
+                        ? 'border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-contrast)]'
+                        : 'border-[var(--card-border)] bg-[var(--surface-layer)] text-secondary hover:border-[var(--accent)] hover:text-accent'
                     }`}
                   >
                     {status}
@@ -94,7 +94,7 @@ const AdminDashboard = () => {
             </div>
           ))}
           {!loading && orders.length === 0 && (
-            <p className="text-sm text-slate-500">No orders found yet. Encourage customers to place new orders.</p>
+            <p className="text-sm text-muted">No orders found yet. Encourage customers to place new orders.</p>
           )}
         </div>
       </div>
