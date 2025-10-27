@@ -1,4 +1,5 @@
 import pool from '../utils/db.js';
+import { logError, logInfo } from '../utils/logger.js';
 
 export const listOrders = async (req, res) => {
   try {
@@ -9,6 +10,7 @@ export const listOrders = async (req, res) => {
          JOIN users u ON u.id = o.customer_id
          ORDER BY o.created_at DESC`
       );
+      logInfo('Admin listed all orders', { adminId: req.user.id });
       return res.json(orders);
     }
 
@@ -19,9 +21,10 @@ export const listOrders = async (req, res) => {
        ORDER BY created_at DESC`,
       [req.user.id]
     );
+    logInfo('Customer listed orders', { customerId: req.user.id });
     return res.json(orders);
   } catch (error) {
-    console.error('List orders error', error);
+    logError('List orders error', error, { userId: req.user?.id });
     return res.status(500).json({ message: 'Unable to fetch orders.' });
   }
 };
@@ -39,9 +42,10 @@ export const createOrder = async (req, res) => {
     );
 
     const [rows] = await pool.query('SELECT * FROM orders WHERE id = ?', [result.insertId]);
+    logInfo('Order created', { customerId: req.user.id, orderId: result.insertId });
     return res.status(201).json(rows[0]);
   } catch (error) {
-    console.error('Create order error', error);
+    logError('Create order error', error, { userId: req.user?.id });
     return res.status(500).json({ message: 'Unable to place order.' });
   }
 };
@@ -63,9 +67,10 @@ export const updateOrderStatus = async (req, res) => {
     if (rows.length === 0) {
       return res.status(404).json({ message: 'Order not found.' });
     }
+    logInfo('Order status updated', { orderId, status, updatedBy: req.user.id });
     return res.json(rows[0]);
   } catch (error) {
-    console.error('Update order error', error);
+    logError('Update order error', error, { orderId, updatedBy: req.user?.id });
     return res.status(500).json({ message: 'Unable to update order.' });
   }
 };
@@ -81,9 +86,10 @@ export const getOrder = async (req, res) => {
     if (req.user.role !== 'admin' && order.customer_id !== req.user.id) {
       return res.status(403).json({ message: 'You do not have access to this order.' });
     }
+    logInfo('Order retrieved', { orderId, requestedBy: req.user.id });
     return res.json(order);
   } catch (error) {
-    console.error('Get order error', error);
+    logError('Get order error', error, { orderId, requestedBy: req.user?.id });
     return res.status(500).json({ message: 'Unable to fetch order details.' });
   }
 };
