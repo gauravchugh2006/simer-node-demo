@@ -112,6 +112,34 @@ This starter does not include automated tests. Feel free to integrate your prefe
 - **Frontend cannot reach API?** Update `VITE_API_BASE_URL` to the reachable API hostname.
 - **Docker Desktop reports `dockerDesktopLinuxEngine` missing?** Switch Docker Desktop to *Use Linux containers* and confirm the engine is running before re-running `docker compose up --build`.
 
+## CI/CD with Jenkins
+
+Follow these steps to enable an automated pipeline that builds the frontend, verifies dependencies, and triggers production deployment after pull requests are merged into the `main` branch:
+
+1. **Install prerequisites on your Jenkins controller/agent**
+   - Node.js 18+ and npm available on the agent that will run the pipeline.
+   - Docker Engine (or Docker Desktop in Linux mode) for building images in the deployment stage.
+   - Jenkins plugins: *Pipeline*, *GitHub*, and *GitHub Branch Source* for webhooks and branch filtering.
+
+2. **Create a pipeline job**
+   - In Jenkins, create a **Multibranch Pipeline** or **Pipeline** job that points to this repository.
+   - Choose “Pipeline script from SCM” and select the repository so Jenkins picks up the root `Jenkinsfile`.
+   - Restrict the branch source to `main` if you only want builds from merged changes.
+
+3. **Configure GitHub webhook for push events**
+   - In your GitHub repository settings, add a webhook targeting `https://<jenkins-url>/github-webhook/`.
+   - Set the webhook to trigger on **Just the push event**; merges to `main` will emit a push and start the pipeline.
+
+4. **Understand the pipeline stages**
+   - **Checkout**: Retrieves the latest code.
+   - **Backend dependencies**: Runs `npm install --prefix backend` to ensure API dependencies resolve.
+   - **Frontend build**: Installs frontend dependencies and builds the production bundle; the generated `frontend/dist` files are archived as build artifacts.
+   - **Container build & deploy (main only)**: Runs `docker compose -f docker-compose.yml build` and then calls a deployment hook. Replace the echo step in `Jenkinsfile` with your production deployment command (for example, `docker stack deploy` or `kubectl apply`). The stage only runs on the `main` branch to align with post-merge deployments.
+
+5. **Protect the main branch**
+   - In GitHub, enable branch protection so pull requests require a passing Jenkins build before merging. This ensures the deployment stage only runs after successful verification.
+
+
 ## License
 
 Released under the MIT license. Feel free to adapt for your own cafe experience.
