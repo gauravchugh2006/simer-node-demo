@@ -42,7 +42,7 @@ pipeline {
       steps {
         script {
           echo "Installing backend dependencies (lightweight mode: ${params.LIGHTWEIGHT_MODE})."
-          def backendInstallCmd = params.LIGHTWEIGHT_MODE ? 'npm ci --prefer-offline --no-audit --prefix backend' : 'npm ci --audit=false --prefix backend'
+          def backendInstallCmd = params.LIGHTWEIGHT_MODE ? 'npm install --prefer-offline --no-audit --prefix backend' : 'npm install --audit=false --prefix backend'
           sh backendInstallCmd
         }
       }
@@ -52,7 +52,7 @@ pipeline {
       steps {
         script {
           echo "Installing frontend dependencies (lightweight mode: ${params.LIGHTWEIGHT_MODE})."
-          def frontendInstallCmd = params.LIGHTWEIGHT_MODE ? 'npm ci --prefer-offline --no-audit --prefix frontend' : 'npm ci --audit=false --prefix frontend'
+          def frontendInstallCmd = params.LIGHTWEIGHT_MODE ? 'npm install --prefer-offline --no-audit --prefix frontend' : 'npm install --audit=false --prefix frontend'
           sh frontendInstallCmd
         }
         echo 'Building frontend artifacts.'

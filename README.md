@@ -153,6 +153,41 @@ The repository ships with a Jenkins Pipeline that builds the React frontend, val
 9. **Protect the main branch**
    - In GitHub, enable branch protection so pull requests require a passing Jenkins build before merging. Deployments only occur on `main`.
 
+### Detailed AWS CI/CD setup (using the provided Jenkinsfile)
+
+Follow these step-by-step bullets to stand up the pipeline on AWS with minimal resource usage:
+
+1. **Provision the EC2 host**
+   - Launch an Amazon Linux 2 (or Ubuntu) t3.small instance with a security group that allows ports `22`, `4000`, and `5173` (or `80/443` if fronted by ALB/CloudFront).
+   - Install Docker and add your deploy user to the `docker` group. Enable Docker on boot: `sudo systemctl enable --now docker`.
+
+2. **Prepare the Jenkins controller/agent**
+   - Install Jenkins (or use a managed controller). Add a Linux agent with Node.js 18+, npm, Git, and Docker/`docker compose` CLI available.
+   - Configure the agent with enough disk for Docker layers (20–30 GB free) and enable workspace cleanup post-build to conserve space.
+
+3. **Add credentials and environment**
+   - In Jenkins → *Manage Credentials*, create an SSH private key credential with ID **`aws-ec2-ssh-key`** that can log in to the EC2 user (default `ec2-user`).
+   - Optional: configure a global Node.js tool install so `node -v` and `npm -v` succeed on the agent.
+
+4. **Create the multibranch or pipeline job**
+   - Choose *Pipeline script from SCM*, point to your GitHub repo, and set the branch to `main` so the root **`Jenkinsfile`** is used.
+   - Add the GitHub webhook (`https://<jenkins-url>/github-webhook/`) to trigger builds automatically on push.
+
+5. **First two full runs**
+   - Run the pipeline twice with the default parameter values. This pulls dependencies fresh, builds images, and deploys via SSH to `/opt/simer-node-demo` on EC2 using `docker compose up -d --build`.
+   - Verify the public URLs respond before enabling optimizations.
+
+6. **Enable lightweight mode to save resources**
+   - After two green runs, edit the next build and set **`LIGHTWEIGHT_MODE=true`**. This reuses cached npm packages (`npm install --prefer-offline --no-audit`) while still rebuilding images.
+   - Keep Docker cleanup enabled in the pipeline (72h prune) and set Jenkins workspace cleanup after build to minimize disk usage.
+
+7. **Observe logs in AWS**
+   - Install and configure the CloudWatch Agent on EC2 to ship Docker container logs and `/var/log/jenkins/jenkins.log` to CloudWatch Logs.
+   - If you front the site with CloudFront, enable access logging to S3; use it alongside CloudWatch for full request/response visibility.
+
+8. **Validate public access**
+   - After each deploy, browse `http://<ec2-public-dns>:5173` (or your ALB/CloudFront URL). The API should be reachable at `http://<ec2-public-dns>:4000`. Confirm security group rules allow inbound traffic.
+
 
 ## License
 
