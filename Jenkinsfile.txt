@@ -17,8 +17,8 @@ pipeline {
   }
   environment {
     NODE_VERSION = '18'
-    AWS_REGION = 'us-east-1'
-    EC2_HOST = 'your-ec2-public-dns-or-ip'
+    AWS_REGION = 'eu-north-1'
+    EC2_HOST = 'ec2-13-61-178-232.eu-north-1.compute.amazonaws.com'
     EC2_USER = 'ec2-user'
     SSH_KEY_CREDENTIALS = 'aws-ec2-ssh-key'
     COMPOSE_PROJECT_NAME = 'simer-node-demo'
@@ -66,7 +66,7 @@ pipeline {
         branch 'main'
       }
       steps {
-        echo 'Building Docker images for backend and frontend services.'
+        echo 'Building Docker images for mysql, backend, and frontend services.'
         sh 'docker compose -f docker-compose.yml build --parallel'
 
         echo 'Deploying to EC2 via SSH (docker compose up -d).'
