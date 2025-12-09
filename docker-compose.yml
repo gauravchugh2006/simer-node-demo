@@ -19,6 +19,7 @@ services:
       retries: 5
 
   api:
+    container_name: api
     build: ./backend
     depends_on:
       mysql:
@@ -33,6 +34,7 @@ services:
       JWT_SECRET: supersecretjwtkey
     ports:
       - '4000:4000'
+    restart: unless-stopped
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -44,7 +46,11 @@ services:
     depends_on:
       - api
     environment:
-      VITE_API_BASE_URL: http://localhost:4000
+      # VITE_API_BASE_URL: http://api:4000 # locally within docker-compose network
+      # VITE_API_BASE_URL: http://51.20.119.78:4000
+      # or better, use the DNS:
+      VITE_API_BASE_URL: http://ec2-51-20-119-78.eu-north-1.compute.amazonaws.com:4000
+      # VITE_API_BASE_URL: http://localhost:4000 # Use this line for local development To avoid breaking this every time the IP changes:
     ports:
       - '5173:5173'
     volumes:
