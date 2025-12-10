@@ -3,6 +3,9 @@ set -e
 # Log everything to a file for debugging
 exec > /var/log/user-data.log 2>&1
 
+# Hard-code repo URL here (no dependency on outside env)
+REPO_URL="https://github.com/gauravchugh2006/simer-node-demo.git"
+
 echo "[BOOTSTRAP] Updating system packages..."
 dnf update -y
 
@@ -54,13 +57,14 @@ usermod -aG docker jenkins || true
 # Restart Docker & Jenkins to ensure group changes apply
 systemctl restart docker
 systemctl restart jenkins
+
 #######################################################
 # 5. Clone repo & run docker-compose
 #######################################################
 echo "[BOOTSTRAP] Cloning application repository..."
 cd /home/ec2-user
 if [ ! -d "simer-node-demo" ]; then
-  git clone $REPO_URL
+  git clone "$REPO_URL"
 fi
 cd simer-node-demo
 chown -R ec2-user:ec2-user /home/ec2-user/simer-node-demo
@@ -80,10 +84,7 @@ else
   PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4 || true)
 fi
 
-if [ -z "\$PUBLIC_IP" ]; then
-  PUBLIC_IP="localhost"
-fi
-if [ "\$PUBLIC_IP" = "None" ]; then
+if [ -z "$PUBLIC_IP" ] || [ "$PUBLIC_IP" = "None" ]; then
   PUBLIC_IP="localhost"
 fi
 

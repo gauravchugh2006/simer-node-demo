@@ -17,8 +17,8 @@ pipeline {
   }
   environment {
     NODE_VERSION = '18'
-    AWS_REGION = 'us-east-1'
-    EC2_HOST = 'ec2-51-20-119-78.eu-north-1.compute.amazonaws.com'
+    AWS_REGION = 'eu-north-1'
+    EC2_HOST = 'ec2-51-20-66-150.eu-north-1.compute.amazonaws.com'
     EC2_USER = 'ec2-user'
     SSH_KEY_CREDENTIALS = 'aws-ec2-ssh-key'
     COMPOSE_PROJECT_NAME = 'simer-node-demo'

@@ -95,7 +95,9 @@ aws ec2 authorize-security-group-ingress \
   --group-id "$SG_ID" \
   --protocol tcp --port 3306 --cidr 0.0.0.0/0 \
   --region "$AWS_REGION"
+
 echo "Security group rules added."
+
 ############################################################
 # STEP 3 – Create EC2 User-Data (Bootstrap Script)
 ############################################################
@@ -106,6 +108,9 @@ cat > user-data.sh <<'EOF'
 set -e
 # Log everything to a file for debugging
 exec > /var/log/user-data.log 2>&1
+
+# Hard-code repo URL here (no dependency on outside env)
+REPO_URL="https://github.com/gauravchugh2006/simer-node-demo.git"
 
 echo "[BOOTSTRAP] Updating system packages..."
 dnf update -y
@@ -158,13 +163,14 @@ usermod -aG docker jenkins || true
 # Restart Docker & Jenkins to ensure group changes apply
 systemctl restart docker
 systemctl restart jenkins
+
 #######################################################
 # 5. Clone repo & run docker-compose
 #######################################################
 echo "[BOOTSTRAP] Cloning application repository..."
 cd /home/ec2-user
 if [ ! -d "simer-node-demo" ]; then
-  git clone $REPO_URL
+  git clone "$REPO_URL"
 fi
 cd simer-node-demo
 chown -R ec2-user:ec2-user /home/ec2-user/simer-node-demo
@@ -184,10 +190,7 @@ else
   PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4 || true)
 fi
 
-if [ -z "\$PUBLIC_IP" ]; then
-  PUBLIC_IP="localhost"
-fi
-if [ "\$PUBLIC_IP" = "None" ]; then
+if [ -z "$PUBLIC_IP" ] || [ "$PUBLIC_IP" = "None" ]; then
   PUBLIC_IP="localhost"
 fi
 
@@ -223,7 +226,9 @@ echo "Bootstrap script created: user-data.sh"
 ############################################################
 echo "----- STEP 4: Launch EC2 Instance -----"
 
-INSTANCE_ID=$(aws ec2 run-instances \
+# IMPORTANT: disable Git Bash path conversion so /dev/xvda is not mangled
+MSYS_NO_PATHCONV=1 \
+aws ec2 run-instances \
   --image-id "$AMI_ID" \
   --count 1 \
   --instance-type "$INSTANCE_TYPE" \
@@ -233,7 +238,10 @@ INSTANCE_ID=$(aws ec2 run-instances \
   --region "$AWS_REGION" \
   --block-device-mappings "DeviceName=/dev/xvda,Ebs={VolumeSize=$ROOT_VOLUME_SIZE,VolumeType=gp3,DeleteOnTermination=true}" \
   --query "Instances[0].InstanceId" \
-  --output text)
+  --output text > instance-id.txt
+
+INSTANCE_ID=$(cat instance-id.txt)
+rm -f instance-id.txt
 
 echo "Instance launched: $INSTANCE_ID"
 
@@ -272,7 +280,6 @@ echo "SSH: ssh -i ${KEY_NAME}.pem ec2-user@$PUBLIC_IP"
 ############################################################
 echo "----- STEP 7: Try to fetch Jenkins initial admin password (convenience) -----"
 echo "Waiting ~60s for Jenkins to finish bootstrapping..."
-
 # Give Jenkins some time to start
 sleep 60
 
