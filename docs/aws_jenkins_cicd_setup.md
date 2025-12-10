@@ -2,66 +2,98 @@
 
 The following playbook describes how to automate deployments to an EC2 host when pull requests are merged into the `main` branch. It assumes you already have a working Jenkins controller and the `Jenkinsfile` in this repository.
 
-## 1. Prepare AWS resources
-1. **IAM user/role for Jenkins**
-   - Create an IAM user or role with programmatic access limited to the target resources (e.g., `AmazonEC2FullAccess` or a tailored policy that allows: `ec2:DescribeInstances`, `ec2:StartInstances`, `ec2:StopInstances`, `ec2:CreateTags`, `ssm:SendCommand` if using SSM, and `s3:GetObject` if artifacts live in S3`).
-   - Generate access keys for the Jenkins credential store.
+## 1. Prerequisites and environment checks
 
-2. **Network and host access**
-   - Ensure the EC2 instance’s security group allows SSH (port 22) **from the Jenkins controller’s IP**. Keep access narrow.
-   - If using Docker on the EC2 host, expose only necessary application ports to the load balancer or trusted IP ranges.
+Before wiring GitHub to Jenkins, verify the Jenkins host (the EC2 instance) has the right tooling. Fix any gaps before proceeding.
 
-3. **Instance preparation**
-   - Install runtime dependencies on the target EC2 host (Docker, Docker Compose, Node/PM2, etc.). The provided `deploy_ec2.sh` assumes Docker + Compose—validate it locally on the instance.
-   - Create a non-root deploy user with sudo access to Docker (`sudo usermod -aG docker <user>`). Configure SSH for that user.
+| Step | What to check/install | Why it matters | If missing |
+| :--- | :--- | :--- | :--- |
+| Jenkins | Confirm the service is running and reachable (default: port 8080). | Jenkins orchestrates the pipeline defined in the `Jenkinsfile`. | Install Jenkins and start the service. |
+| AWS CLI | Run `aws --version`. | Needed for ECR login or SSM commands; honors IAM role permissions. | Install AWS CLI v2 and configure the correct region (e.g., `us-east-1`). |
+| Git client | Run `git --version`. | Jenkins clones the GitHub repo and reads the `Jenkinsfile`. | Install Git via the OS package manager. |
+| Docker + Compose | Run `docker --version` and `docker-compose --version` (or `docker compose version`). | Required because deployment uses Docker Compose on the EC2 host. | Install Docker and Compose; ensure the Jenkins user can run Docker without sudo. |
 
-4. **Secrets management**
-   - Prefer AWS Systems Manager Parameter Store/Secrets Manager for app secrets. If not available, store secrets as Jenkins credentials and inject them as environment variables during deploy.
+## 2. AWS security architecture (IAM)
 
-## 2. Configure GitHub–Jenkins integration
-1. **GitHub webhook**
-   - In the GitHub repo, add a webhook targeting `https://<jenkins-domain>/github-webhook/`.
-   - Select events: “Pull requests” and “Pushes.” The pipeline will listen for merged PRs via pushes to `main`.
+Follow the assume-role pattern to avoid long-lived keys on the server.
 
-2. **Jenkins GitHub app/token**
-   - Create a GitHub personal access token (classic with `repo` scope or fine-grained with `contents:read`, `metadata`), and add it to Jenkins as a credential (kind: “Secret Text”).
-   - Configure Jenkins global settings: *Manage Jenkins → Configure System → GitHub* and add the token to the GitHub server entry.
+1. **EC2 instance role (requester)**
+   - Attach an IAM role to the Jenkins EC2 instance with minimal permissions (e.g., only `sts:AssumeRole` to the execution role and optional ECR read permissions).
+   - Rationale: keeps the base host privilege low; Jenkins will request stronger, short-lived credentials only when needed.
 
-## 3. Set up Jenkins credentials
-Create the following credentials (names referenced in examples below):
-- `github-credentials`: the GitHub PAT (Secret Text).
-- `ec2-ssh-key`: SSH private key for the deploy user on EC2 (kind: “SSH Username with private key”).
-- `aws-creds`: AWS access key/secret for the IAM user (kind: “AWS Credentials” or two separate secrets). Optionally, rely on an IAM role attached to the Jenkins agent instead.
-- Any app secrets (e.g., `db_password`) as Secret Text or “Username with password.”
+2. **Deployment execution role (actor)**
+   - Create a second IAM role (e.g., `Jenkins-Deployment-EC2-Role`) whose **trust policy** allows the EC2 instance role to assume it.
+   - Attach only the permissions required for deployment (e.g., ECR pull, SSM send-command if used).
+   - Record the role ARN for Jenkins credentials.
 
-## 4. Jenkins pipeline job
-1. **Create a Multibranch Pipeline or a Pipeline job** pointing to this repository. Supply `github-credentials` so Jenkins can clone.
-2. **Branch source filters**: build only `main` or use PR-based triggers if desired.
-3. **Build triggers**: enable “GitHub hook trigger for GITScm polling.”
+## 3. GitHub–Jenkins integration
 
-## 5. Jenkinsfile wiring
-Ensure your `Jenkinsfile` includes these stages (names illustrative):
-- `Checkout`: uses `git` step with the GitHub credentials.
-- `Build & Test`: run unit tests or lint; fail fast to block bad merges.
-- `Package` (optional): build Docker image or artifacts. Push to ECR/Docker Hub if the deploy script expects a registry image.
-- `Deploy`: call `deploy_ec2.sh` on the remote host. Two common approaches:
-  1. **SSH + bash** (simple):
-     ```groovy
-     stage('Deploy') {
-       steps {
-         sshagent(credentials: ['ec2-ssh-key']) {
-           sh 'ssh -o StrictHostKeyChecking=no ec2-user@<EC2_PUBLIC_IP> "bash -s" < deploy_ec2.sh'
-         }
-       }
-     }
-     ```
-     - Replace `ec2-user` and host with your target values.
-     - `deploy_ec2.sh` should be idempotent (safe to re-run) and executable.
-  2. **AWS SSM** (no direct SSH): use `aws ssm send-command` from Jenkins to run `deploy_ec2.sh` stored in S3 or inline. Requires the SSM agent and IAM permissions.
+1. **Webhook**
+   - In GitHub: **Settings → Webhooks → Add webhook**, URL `http(s)://<jenkins-host>/github-webhook/`, content type `application/json`.
+   - Trigger: select **“Just the push event.”** PR merges into `main` emit push events, which will start the pipeline automatically.
 
-## 6. Making the deploy script idempotent
-- Validate `deploy_ec2.sh` handles repeated runs by checking for existing containers and pulling only when versions change.
-- Example snippet to redeploy Docker Compose safely:
+2. **Jenkins GitHub token**
+   - Create a GitHub Personal Access Token (classic `repo` scope or fine-grained with `contents:read`, `metadata`). Add it to Jenkins as **Secret Text**.
+   - Configure **Manage Jenkins → Configure System → GitHub** to use that token for API calls (e.g., status checks).
+
+## 4. Jenkins credentials to create
+
+Use these IDs (or adjust in your `Jenkinsfile`):
+- `github-credentials`: GitHub PAT (Secret Text) for cloning.
+- `ec2-ssh-key`: SSH key for the deploy user on EC2 (kind: “SSH Username with private key”).
+- `aws-deploy-role`: AWS credential entry containing the **execution role ARN** (kind: “AWS Credentials”). This relies on the EC2 instance role to assume it via STS.
+- App secrets such as `db_password` as Secret Text.
+
+## 5. Configure the Jenkins pipeline job
+
+1. Create a **Pipeline** (or Multibranch) job named, for example, `My-App-CICD`.
+2. **Build Triggers:** enable **“GitHub hook trigger for GITScm polling.”**
+3. **Pipeline definition:** choose **“Pipeline script from SCM.”**
+   - SCM: Git, URL: your repo, Credentials: `github-credentials`, Branches to build: `*/main`.
+
+## 6. Jenkinsfile wiring
+
+Ensure the `Jenkinsfile` consumes the credentials above and assumes the deployment role securely.
+
+- **Core stages to include**
+  - `Checkout`: uses `git` with `github-credentials`.
+  - `Build & Test`: run unit tests/lint; fail fast.
+  - `Package` (optional): build and push Docker image to ECR if needed by the deploy script.
+  - `Deploy`: run `deploy_ec2.sh` on the EC2 host.
+
+- **SSH-based deploy example** (keeps `deploy_ec2.sh` idempotent and re-runnable):
+  ```groovy
+  stage('Deploy') {
+    steps {
+      sshagent(credentials: ['ec2-ssh-key']) {
+        sh 'ssh -o StrictHostKeyChecking=no ec2-user@<EC2_PUBLIC_IP> "bash -s" < deploy_ec2.sh'
+      }
+    }
+  }
+  ```
+
+- **Assume-role + ECR + Compose example** (for role-based auth on the host):
+  ```groovy
+  stage('Deployment to EC2') {
+    steps {
+      withAWS(roleArn: credentials('aws-deploy-role'), roleSessionName: 'EC2-Deployment-Session') {
+        sh """
+          aws ecr get-login-password --region <REGION> | docker login --username AWS --password-stdin <ECR_URI>
+          docker compose pull
+          docker compose up -d --remove-orphans
+          docker image prune -f
+        """
+      }
+    }
+  }
+  ```
+
+- **SSM-based deploy** (no direct SSH): use `aws ssm send-command` from Jenkins to run `deploy_ec2.sh` (stored in S3 or inline). Requires the SSM agent on the instance and matching IAM permissions.
+
+## 7. Make `deploy_ec2.sh` idempotent
+
+- Handle repeated runs safely by pulling updated images and recreating containers only when needed.
+- Example snippet:
   ```bash
   set -euo pipefail
   docker compose pull
@@ -69,30 +101,25 @@ Ensure your `Jenkinsfile` includes these stages (names illustrative):
   docker image prune -f
   ```
 
-## 7. Protecting `main` with PR merges
-- Enable branch protection on `main` so only approved PRs merge. Require status checks from Jenkins (e.g., `build-and-test` stage) before merging.
-- When a PR is merged, GitHub pushes to `main` trigger the webhook → Jenkins job → deploy stage.
+## 8. Protecting `main` with PR merges
 
-## 8. Observability and rollback
-- Pipe application logs to CloudWatch Logs or a centralized tool; for Docker, use `awslogs` driver or `docker logs` through SSH.
-- Keep previous images or Compose files; to roll back, redeploy with the prior image tag or git commit.
+- Enable branch protection on `main` so only approved PRs merge. Require status checks from Jenkins (e.g., build/test stage) before merging.
+- PR merges to `main` create push events → webhook triggers Jenkins → pipeline runs → deploys.
 
-## 9. Example end-to-end flow
-1. Developer opens PR → Jenkins runs tests via webhook.
-2. PR approved and merged into `main`.
-3. GitHub webhook triggers Jenkins; Jenkins clones `main` and runs build/test.
-4. Jenkins pushes image to registry (if applicable) and runs `deploy_ec2.sh` over SSH/SSM on the EC2 instance.
-5. EC2 pulls the new image/code and restarts containers; health checks confirm success.
+## 9. Observability, validation, and rollback
 
-## 10. Security and reliability tips
-- Rotate SSH keys and tokens regularly; prefer short-lived AWS roles where possible.
-- Restrict Jenkins agents’ IAM permissions to least privilege.
-- Store no long-lived secrets in the repo; rely on Jenkins credentials or AWS Parameter Store.
-- Add retries/backoff in deployment steps to handle transient network issues.
+- Send logs to CloudWatch Logs or view via `docker logs` over SSH. Add retries/backoff in deployment steps for transient issues.
+- Keep previous images or Compose files to roll back by redeploying the prior tag or git commit.
+- **Validation checklist**
+  - [ ] Webhook deliveries succeed (GitHub → Recent Deliveries).
+  - [ ] Jenkins builds on `main` pushes.
+  - [ ] Deploy stage can reach EC2 via SSH/SSM.
+  - [ ] Application starts after Compose/PM2 restart.
+  - [ ] Rollback path tested.
 
-## 11. Validation checklist
-- [ ] Webhook delivers events to Jenkins (check GitHub “Recent Deliveries”).
-- [ ] Jenkins job builds on `main` pushes.
-- [ ] Deploy stage can reach EC2 via SSH/SSM.
-- [ ] Application starts successfully after Compose/PM2 restart.
-- [ ] Rollback path tested.
+## 10. Test the end-to-end flow
+
+1. Push a change to a feature branch and open a PR.
+2. Merge the PR into `main`.
+3. Verify Jenkins auto-starts the pipeline from the webhook and progresses through checkout → build/test → deploy.
+4. Confirm the EC2 instance pulls the new image/code and the app is live.
