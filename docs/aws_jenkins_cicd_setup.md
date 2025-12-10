@@ -40,7 +40,7 @@ Follow the assume-role pattern to avoid long-lived keys on the server.
 
 Use these IDs (or adjust in your `Jenkinsfile`):
 - `github-credentials`: GitHub PAT (Secret Text) for cloning.
-- `ec2-ssh-key`: SSH key for the deploy user on EC2 (kind: “SSH Username with private key”).
+- `aws-ec2-ssh-key`: SSH key for the deploy user on EC2 (kind: “SSH Username with private key”). This matches `SSH_KEY_CREDENTIALS` in the repository `Jenkinsfile`.
 - `aws-deploy-role`: AWS credential entry containing the **execution role ARN** (kind: “AWS Credentials”). This relies on the EC2 instance role to assume it via STS.
 - App secrets such as `db_password` as Secret Text.
 
@@ -58,15 +58,51 @@ Ensure the `Jenkinsfile` consumes the credentials above and assumes the deployme
 - **Core stages to include**
   - `Checkout`: uses `git` with `github-credentials`.
   - `Build & Test`: run unit tests/lint; fail fast.
-  - `Package` (optional): build and push Docker image to ECR if needed by the deploy script.
-  - `Deploy`: run `deploy_ec2.sh` on the EC2 host.
+  - `Package` (optional): build and push Docker image to ECR if needed by the deploy step.
+  - `Deploy`: reuse the inline Docker Compose deployment in the repository `Jenkinsfile` (keeps redeploys contained to the existing EC2 host). Avoid running `deploy_ec2.sh` remotely because it provisions infrastructure (key pairs, security groups, instances) and assumes AWS CLI credentials on the caller; running it over SSH during deployments would either fail on the target host or unintentionally create new instances.
 
-- **SSH-based deploy example** (keeps `deploy_ec2.sh` idempotent and re-runnable):
+- **SSH-based deploy example (matches repo `Jenkinsfile`, avoids provisioning script)**
   ```groovy
-  stage('Deploy') {
+  stage('Container build & deploy (main only)') {
+    when {
+      branch 'main'
+    }
     steps {
-      sshagent(credentials: ['ec2-ssh-key']) {
-        sh 'ssh -o StrictHostKeyChecking=no ec2-user@<EC2_PUBLIC_IP> "bash -s" < deploy_ec2.sh'
+      echo 'Building Docker images for backend and frontend services.'
+      sh 'docker compose -f docker-compose.yml build --parallel'
+
+      echo 'Deploying to EC2 via SSH (docker compose up -d).'
+      script {
+        def repoUrl = sh(returnStdout: true, script: 'git config --get remote.origin.url').trim()
+        sshagent (credentials: ['aws-ec2-ssh-key']) {
+          sh """
+            ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} <<'DEPLOY'
+            set -e
+            echo "Preparing deployment directory on EC2 host."
+            sudo mkdir -p /opt/${COMPOSE_PROJECT_NAME}
+            sudo chown ${EC2_USER}:${EC2_USER} /opt/${COMPOSE_PROJECT_NAME}
+            cd /opt/${COMPOSE_PROJECT_NAME}
+
+            if [ ! -d .git ]; then
+              echo "Cloning repository ${repoUrl}."
+              git clone ${repoUrl} .
+            else
+              echo "Refreshing repository from origin/main."
+              git fetch --all --prune
+            fi
+
+            git checkout main
+            git reset --hard origin/main
+
+            echo "Launching containers with docker compose."
+            docker compose -f docker-compose.yml pull || true
+            docker compose -f docker-compose.yml up -d --build
+
+            echo "Pruning old Docker resources (safe cleanup)."
+            docker system prune -af --volumes --filter "until=72h" || true
+            DEPLOY
+          """
+        }
       }
     }
   }
