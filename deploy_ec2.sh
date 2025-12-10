@@ -110,12 +110,18 @@ set -e
 
 # 0. Create 1G swap to avoid OOM on t3.micro
 if ! sudo grep -q "/swapfile" /etc/fstab; then
+  echo "Creating swapfile..."
   sudo fallocate -l 1G /swapfile || sudo dd if=/dev/zero of=/swapfile bs=1M count=1024
   sudo chmod 600 /swapfile
   sudo mkswap /swapfile
   sudo swapon /swapfile
   echo "/swapfile swap swap defaults 0 0" | sudo tee -a /etc/fstab
+else
+  echo "Swap already configured, skipping."
+  sudo swapon /swapfile || true
 fi
+
+free -m
 
 # 1. Update system and install dependencies
 sudo dnf update -y
