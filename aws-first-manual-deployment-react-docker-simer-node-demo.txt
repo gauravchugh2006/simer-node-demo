@@ -1,0 +1,377 @@
+after creating instance launch create pem file in your root project directory
+
+check whether you are able to connect your linux/ubuntu base instance from vscode 
+
+Gaurav Chugh@IDEAPADPRO5ULTRA9-FAO0TE0I MINGW64 ~/source/repos/simer-node-demo (main)
+$ ssh -i simer-node-demo-dec2025.pem ec2-user@13.61.178.232
+
+if it gives error then your .pem file should have permission on macos machine
+	- macos/linux
+	chmod 400 ~/source/repos/simer-node-demo/simer-node-demo-dec2025.pem
+	- windows git bash
+	chmod 400 simer-node-demo-dec2025.pem
+Try connecting again
+Gaurav Chugh@IDEAPADPRO5ULTRA9-FAO0TE0I MINGW64 ~/source/repos/simer-node-demo (main)
+$ ssh -i simer-node-demo-dec2025.pem ec2-user@13.61.178.232
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+   ,     #_
+   ~\_  ####_        Amazon Linux 2023
+  ~~  \_#####\
+  ~~     \###|
+  ~~       \#/ ___   https://aws.amazon.com/linux/amazon-linux-2023
+   ~~       V~' '->
+    ~~~         /
+      ~~._.   _/
+         _/ _/
+       _/m/'
+-------------------------------------------------
+THEN
+-------------------------------------------
+1. Install/update Docker
+sudo yum update -y
+sudo amazon-linux-extras enable docker
+sudo yum install -y docker
+
+
+2. Enable Docker on boot and add your user
+sudo systemctl enable --now docker
+sudo usermod -aG docker ec2-user
+
+⚠️ After running this, log out and back in (exit then reconnect via SSH) so your user group changes take effect.
+
+3. Verify Docker
+docker --version
+docker compose version
+
+	___ OUTPUT SHOULD LOOK LIKE BELOW _______ vvvvv
+[ec2-user@ip-172-31-20-171 ~]$ sudo dnf update -y
+Last metadata expiration check: 0:00:45 ago on Tue Dec  9 12:08:57 2025.
+Dependencies resolved.
+Nothing to do.
+Complete!
+[ec2-user@ip-172-31-20-171 ~]$ sudo dnf install -y docker
+Last metadata expiration check: 0:00:52 ago on Tue Dec  9 12:08:57 2025.
+Dependencies resolved.
+==========================================================================================================================
+ Package                            Architecture       Version                              Repository               Size 
+==========================================================================================================================
+Installing:
+ docker                             x86_64             25.0.13-1.amzn2023.0.2               amazonlinux              46 M
+Installing dependencies:
+ container-selinux                  noarch             4:2.242.0-1.amzn2023                 amazonlinux              58 k 
+ containerd                         x86_64             2.1.5-1.amzn2023.0.1                 amazonlinux              23 M 
+ iptables-libs                      x86_64             1.8.8-3.amzn2023.0.2                 amazonlinux             401 k 
+ iptables-nft                       x86_64             1.8.8-3.amzn2023.0.2                 amazonlinux             183 k 
+ libcgroup                          x86_64             3.0-1.amzn2023.0.1                   amazonlinux              75 k 
+ libnetfilter_conntrack             x86_64             1.0.8-2.amzn2023.0.2                 amazonlinux              58 k 
+ libnfnetlink                       x86_64             1.0.1-19.amzn2023.0.2                amazonlinux              30 k 
+ libnftnl                           x86_64             1.2.2-2.amzn2023.0.2                 amazonlinux              84 k
+ pigz                               x86_64             2.5-1.amzn2023.0.3                   amazonlinux              83 k 
+ runc                               x86_64             1.3.3-2.amzn2023.0.1                 amazonlinux             3.9 M 
+
+Transaction Summary
+==========================================================================================================================
+Install  11 Packages
+
+Total download size: 74 M
+Installed size: 280 M
+Downloading Packages:
+(1/11): container-selinux-2.242.0-1.amzn2023.noarch.rpm                                   1.7 MB/s |  58 kB     00:00     
+(2/11): iptables-libs-1.8.8-3.amzn2023.0.2.x86_64.rpm                                      13 MB/s | 401 kB     00:00     
+(3/11): iptables-nft-1.8.8-3.amzn2023.0.2.x86_64.rpm                                      5.5 MB/s | 183 kB     00:00     
+(4/11): libcgroup-3.0-1.amzn2023.0.1.x86_64.rpm                                           3.2 MB/s |  75 kB     00:00   
+
+[ec2-user@ip-172-31-20-171 ~]$ DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
+mkdir -p $DOCKER_CONFIG/cli-plugins
+
+curl -SL https://github.com/docker/compose/releases/download/v2.29.2/docker-compose-linux-x86_64 \
+  -o $DOCKER_CONFIG/cli-plugins/docker-compose
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+100 60.2M  100 60.2M    0     0   151M      0 --:--:-- --:--:-- --:--:--  151M
+[ec2-user@ip-172-31-20-171 ~]$ chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
+[ec2-user@ip-172-31-20-171 ~]$ docker compose version
+Docker Compose version v2.29.2
+[ec2-user@ip-172-31-20-171 ~]$ sudo systemctl enable --now docker
+[ec2-user@ip-172-31-20-171 ~]$ sudo usermod -aG docker ec2-user
+
+-------------------------------------------
+TRY INSTALL NODEJS AND GIT
+
+[ec2-user@ip-172-31-20-171 ~]$ curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt install -y nodejs
+Error: This script is only supported on Debian-based systems.
+sudo: apt: command not found
+[ec2-user@ip-172-31-20-171 ~]$ sudo apt install -y git
+sudo: apt: command not found
+[ec2-user@ip-172-31-20-171 ~]$ dnf module list nodejs
+Amazon Linux 2023 repository                                                               34 MB/s |  51 MB     00:01    
+Amazon Linux 2023 Kernel Livepatch repository                                             295 kB/s |  29 kB     00:00    
+Error: No matching Modules to list
+[ec2-user@ip-172-31-20-171 ~]$ sudo dnf module enable nodejs:18 -y
+Last metadata expiration check: 0:08:04 ago on Tue Dec  9 12:08:57 2025.
+Error: Problems in request:
+missing groups or modules: nodejs:18
+
+[ec2-user@ip-172-31-20-171 ~]$ sudo dnf install -y nodejs
+Last metadata expiration check: 0:08:13 ago on Tue Dec  9 12:08:57 2025.
+Dependencies resolved.
+==========================================================================================================================
+ Package                     Architecture      Version                                       Repository              Size 
+==========================================================================================================================
+Installing:
+ nodejs                      x86_64            1:18.20.8-1.amzn2023.0.2                      amazonlinux             13 M
+Installing dependencies:
+ libbrotli                   x86_64            1.0.9-4.amzn2023.0.2                          amazonlinux            315 k 
+ nodejs-libs                 x86_64            1:18.20.8-1.amzn2023.0.2                      amazonlinux             14 M 
+Installing weak dependencies:
+ nodejs-docs                 noarch            1:18.20.8-1.amzn2023.0.2                      amazonlinux            7.8 M 
+ nodejs-full-i18n            x86_64            1:18.20.8-1.amzn2023.0.2                      amazonlinux            8.4 M 
+ nodejs-npm                  x86_64            1:10.8.2-1.18.20.8.1.amzn2023.0.2             amazonlinux            1.9 M 
+
+Transaction Summary
+==========================================================================================================================
+Install  6 Packages
+
+Total download size: 45 M
+Installed size: 224 M
+Downloading Packages:
+(1/6): libbrotli-1.0.9-4.amzn2023.0.2.x86_64.rpm                                          6.3 MB/s | 315 kB     00:00     
+(2/6): nodejs-docs-18.20.8-1.amzn2023.0.2.noarch.rpm                                       55 MB/s | 7.8 MB     00:00     
+(3/6): nodejs-full-i18n-18.20.8-1.amzn2023.0.2.x86_64.rpm                                  50 MB/s | 8.4 MB     00:00     
+(4/6): nodejs-18.20.8-1.amzn2023.0.2.x86_64.rpm                                            45 MB/s |  13 MB     00:00     
+(5/6): nodejs-npm-10.8.2-1.18.20.8.1.amzn2023.0.2.x86_64.rpm                               21 MB/s | 1.9 MB     00:00     
+(6/6): nodejs-libs-18.20.8-1.amzn2023.0.2.x86_64.rpm                                       60 MB/s |  14 MB     00:00     
+--------------------------------------------------------------------------------------------------------------------------
+Total                                                                                     108 MB/s |  45 MB     00:00     
+Running transaction check
+Transaction check succeeded.
+...
+Installed:
+  libbrotli-1.0.9-4.amzn2023.0.2.x86_64                   nodejs-1:18.20.8-1.amzn2023.0.2.x86_64
+  nodejs-docs-1:18.20.8-1.amzn2023.0.2.noarch             nodejs-full-i18n-1:18.20.8-1.amzn2023.0.2.x86_64
+  nodejs-libs-1:18.20.8-1.amzn2023.0.2.x86_64             nodejs-npm-1:10.8.2-1.18.20.8.1.amzn2023.0.2.x86_64
+
+Complete!
+[ec2-user@ip-172-31-20-171 ~]$ node -v
+v18.20.8
+[ec2-user@ip-172-31-20-171 ~]$ npm -v
+10.8.2
+[ec2-user@ip-172-31-20-171 ~]$ sudo dnf install -y git
+Last metadata expiration check: 0:08:45 ago on Tue Dec  9 12:08:57 2025.
+Dependencies resolved.
+==========================================================================================================================
+ Package                       Architecture        Version                                 Repository                Size 
+==========================================================================================================================
+Installing:
+ git                           x86_64              2.50.1-1.amzn2023.0.1                   amazonlinux               53 k
+Installing dependencies:
+ git-core                      x86_64              2.50.1-1.amzn2023.0.1                   amazonlinux              4.9 M 
+ git-core-doc                  noarch              2.50.1-1.amzn2023.0.1                   amazonlinux              2.8 M 
+ perl-Error                    noarch              1:0.17029-5.amzn2023.0.2                amazonlinux               41 k 
+ perl-File-Find                noarch              1.37-477.amzn2023.0.7                   amazonlinux               25 k 
+ perl-Git                      noarch              2.50.1-1.amzn2023.0.1                   amazonlinux               41 k 
+ perl-TermReadKey              x86_64              2.38-9.amzn2023.0.2                     amazonlinux               36 k 
+ perl-lib                      x86_64              0.65-477.amzn2023.0.7                   amazonlinux               15 k 
+
+Transaction Summary
+==========================================================================================================================
+Install  8 Packages
+
+Total download size: 7.9 M
+Installed size: 41 M
+Downloading Packages:
+(1/8): git-2.50.1-1.amzn2023.0.1.x86_64.rpm                                               1.5 MB/s |  53 kB     00:00     
+(2/8): perl-Error-0.17029-5.amzn2023.0.2.noarch.rpm                                       1.9 MB/s |  41 kB     00:00     
+(3/8): git-core-doc-2.50.1-1.amzn2023.0.1.noarch.rpm                                       36 MB/s | 2.8 MB     00:00     
+(4/8): perl-File-Find-1.37-477.amzn2023.0.7.noarch.rpm                                    1.0 MB/s |  25 kB     00:00     
+(5/8): git-core-2.50.1-1.amzn2023.0.1.x86_64.rpm                                           45 MB/s | 4.9 MB     00:00     
+(6/8): perl-Git-2.50.1-1.amzn2023.0.1.noarch.rpm                                          1.2 MB/s |  41 kB     00:00     
+(7/8): perl-TermReadKey-2.38-9.amzn2023.0.2.x86_64.rpm                                    1.1 MB/s |  36 kB     00:00     
+(8/8): perl-lib-0.65-477.amzn2023.0.7.x86_64.rpm                                          297 kB/s |  15 kB     00:00     
+--------------------------------------------------------------------------------------------------------------------------
+Total                                                                                      41 MB/s | 7.9 MB     00:00     
+Running transaction check
+Transaction check succeeded.
+Installed:
+  git-2.50.1-1.amzn2023.0.1.x86_64                             git-core-2.50.1-1.amzn2023.0.1.x86_64
+  git-core-doc-2.50.1-1.amzn2023.0.1.noarch                    perl-Error-1:0.17029-5.amzn2023.0.2.noarch
+  perl-File-Find-1.37-477.amzn2023.0.7.noarch                  perl-Git-2.50.1-1.amzn2023.0.1.noarch
+  perl-TermReadKey-2.38-9.amzn2023.0.2.x86_64                  perl-lib-0.65-477.amzn2023.0.7.x86_64
+
+Complete!
+[ec2-user@ip-172-31-20-171 ~]$ git --version
+git version 2.50.1
+[ec2-user@ip-172-31-20-171 ~]$ curl http://13.61.178.232:4000
+curl: (7) Failed to connect to 13.61.178.232 port 4000 after 0 ms: Could not connect to server
+[ec2-user@ip-172-31-20-171 ~]$ curl http://13.61.178.232:5173
+curl: (7) Failed to connect to 13.61.178.232 port 5173 after 0 ms: Could not connect to server
+[ec2-user@ip-172-31-20-171 ~]$ git clone https://github.com/gauravchugh2006/simer-node-demo
+Cloning into 'simer-node-demo'...
+remote: Enumerating objects: 143, done.
+remote: Counting objects: 100% (143/143), done.
+remote: Compressing objects: 100% (126/126), done.
+remote: Total 143 (delta 51), reused 23 (delta 7), pack-reused 0 (from 0)
+Receiving objects: 100% (143/143), 55.00 KiB | 4.58 MiB/s, done.
+Resolving deltas: 100% (51/51), done.
+--------------------------------------
+After Git Is Installed and your repo is cloned
+Update your project root file Jenkinsfile with AWS ec2 instance and push changes to main
+
+
+EC2_HOST = 'ec2-13-61-178-232.eu-north-1.compute.amazonaws.com'
+EC2_USER = 'ec2-user'
+SSH_KEY_CREDENTIALS = 'aws-ec2-ssh-key'
+
+---------------
+[ec2-user@ip-172-31-20-171 ~]$ cd simer-node-demo/
+[ec2-user@ip-172-31-20-171 simer-node-demo]$ git pull
+remote: Enumerating objects: 5, done.
+remote: Counting objects: 100% (5/5), done.
+remote: Compressing objects: 100% (1/1), done.
+remote: Total 3 (delta 2), reused 3 (delta 2), pack-reused 0 (from 0)
+Unpacking objects: 100% (3/3), 372 bytes | 372.00 KiB/s, done.
+From https://github.com/gauravchugh2006/simer-node-demo
+   96ec26f..56f0346  main       -> origin/main
+Updating 96ec26f..56f0346
+Fast-forward
+ Jenkinsfile.txt | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+[ec2-user@ip-172-31-20-171 simer-node-demo]$ docker compose -f docker-compose.yml up -d --build
+permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get "http://%2Fvar%2Frun%2Fdocker.sock/v1.46/containers/json?all=1&filters=%7B%22label%22%3A%7B%22com.docker.compose.config-hash%22%3Atrue%2C%22com.docker.compose.project%3Dsimer-node-demo%22%3Atrue%7D%7D": dial unix /var/run/docker.sock: connect: permission denied        
+[ec2-user@ip-172-31-20-171 simer-node-demo]$
+---------------------------------------
+LOGOUT AND RELOGIN
+
+ssh -i simer-node-demo-dec2025.pem ec2-user@13.61.178.232
+--- YOU SHOULD SEE OUTPUT LIKE
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+   ,     #_
+   ~\_  ####_        Amazon Linux 2023
+  ~~  \_#####\
+  ~~     \###|
+  ~~       \#/ ___   https://aws.amazon.com/linux/amazon-linux-2023
+   ~~       V~' '->
+    ~~~         /
+      ~~._.   _/
+         _/ _/
+       _/m/'
+Last login: Tue Dec  9 12:07:46 2025 from 88.178.45.229
+[ec2-user@ip-172-31-20-171 ~]$ groups
+ec2-user adm wheel systemd-journal docker
+[ec2-user@ip-172-31-20-171 ~]$ cd simer-node-demo
+docker compose -f docker-compose.yml up -d --build
+[+] Running 9/11
+ ⠹ mysql [⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿]   229MB / 233MB   Pulling                                                                        18.3s 
+   ✔ 7a5e1e917526 Pull complete                                                                                         7.0s 
+   ✔ 54c71e5d2da5 Pull complete                                                                                         7.1s 
+   ✔ 57bd38a2d740 Pull complete                                                                                         7.1s 
+   ✔ 782c57ddb1a7 Pull complete                                                                                         7.4s 
+   ✔ 17ff14fd324e Pull complete                                                                                         7.5s 
+   ✔ e84ca20366cc Pull complete                                                                                         7.5s 
+   ✔ fea5342c4477 Pull complete                                                                                         8.9s 
+   ✔ 24b65e61bf70 Pull complete                                                                                         8.9s 
+   ⠇ 9e2f31baa56a Extracting      [=========================>                         ]  65.7...                       16.3s 
+   ✔ f13e37513b38 Download complete                                                                                     5.3s
+
+after successfully running required docker containers on aws ec2 instance
+but now when I am trying to test both 4000 and 5173 it was not responding for almost 5 minutes
+curl http://13.61.178.232:5173 
+curl http://13.61.178.232:4000
+
+so i killed my bash command window and tried re-connect/login my ec2 instance 
+ssh -i simer-node-demo-dec2025.pem ec2-user@13.61.178.232 it is also not resonding now
+
+so in new git bash window I ran my application on local docker-desktop and in browser i checked my frontend app loaded it was running fine on localhost:5173
+
+Gaurav Chugh@IDEAPADPRO5ULTRA9-FAO0TE0I MINGW64 ~/source/repos/simer-node-demo (main)
+$ ssh -i simer-node-demo-dec2025.pem ec2-user@51.20.119.78
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+   ,     #_
+   ~\_  ####_        Amazon Linux 2023
+  ~~  \_#####\
+  ~~     \###|
+  ~~       \#/ ___   https://aws.amazon.com/linux/amazon-linux-2023
+   ~~       V~' '->
+    ~~~         /
+      ~~._.   _/
+         _/ _/
+       _/m/'
+Last login: Tue Dec  9 15:27:07 2025 from 88.178.45.229
+[ec2-user@ip-172-31-20-171 ~]$ sudo fallocate -l 1G /swapfile
+[ec2-user@ip-172-31-20-171 ~]$ sudo chmod 600 /swapfile
+[ec2-user@ip-172-31-20-171 ~]$ sudo mkswap /swapfile
+Setting up swapspace version 1, size = 1024 MiB (1073737728 bytes)
+no label, UUID=15664864-e801-42dd-8f76-f65aa0c813a9
+[ec2-user@ip-172-31-20-171 ~]$ sudo swapon /swapfile
+[ec2-user@ip-172-31-20-171 ~]$ echo '/swapfile swap swap defaults 0 0' | sudo sudo tee -a /etc/fstab
+/swapfile swap swap defaults 0 0
+[ec2-user@ip-172-31-20-171 ~]$ free -m
+               total        used        free      shared  buff/cache   available
+Mem:             916         644          63           0         208         140
+Swap:           1023           0        1023
+[ec2-user@ip-172-31-20-171 ~]$ sudo systemctl restart docker
+[ec2-user@ip-172-31-20-171 ~]$ docker ps
+CONTAINER ID   IMAGE       COMMAND                  CREATED             STATUS                            PORTS                                                  NAMES
+e0160cd494f1   mysql:8.4   "docker-entrypoint.s…"   About an hour ago   Up 5 seconds (health: starting)   0.0.0.0:3306->3306/tcp, :::3306->3306/tcp, 33060/tcp   simer-node-demo-mysql-1
+[ec2-user@ip-172-31-20-171 ~]$ cd simer-node-demo/
+[ec2-user@ip-172-31-20-171 simer-node-demo]$ docker compose down
+[+] Running 4/4
+ ✔ Container simer-node-demo-frontend-1  Removed                                                                                                0.0s 
+ ✔ Container simer-node-demo-api-1       Removed                                                                                                0.0s 
+ ✔ Container simer-node-demo-mysql-1     Removed                                                                                                2.1s 
+ ✔ Network simer-node-demo_default       Removed                                                                                                0.5s 
+[ec2-user@ip-172-31-20-171 simer-node-demo]$ docker compose up -d --build
+[+] Building 1.5s (20/20) FINISHED                                                                                                    docker:default
+ => [api internal] load build definition from Dockerfile                                                                                        0.0s
+ => => transferring dockerfile: 230B                                                                                                            0.0s 
+ => [frontend internal] load metadata for docker.io/library/node:20-alpine                                                                      1.2s 
+ => [api internal] load .dockerignore                                                                                                           0.0s
+ => => transferring context: 166B                                                                                                               0.0s 
+ => [frontend 1/6] FROM docker.io/library/node:20-alpine@sha256:643e7036aa985317ebfee460005e322aa550c6b6883000d01daefb58689a58e2                0.0s 
+ => [api internal] load build context                                                                                                           0.0s 
+ => => transferring context: 2.12kB                                                                                                             0.0s 
+ => CACHED [frontend 2/6] WORKDIR /app                                                                                                          0.0s 
+ => CACHED [api 3/5] COPY package.json ./                                                                                                       0.0s 
+ => CACHED [api 4/5] RUN npm install --production                                                                                               0.0s 
+ => CACHED [api 5/5] COPY . .                                                                                                                   0.0s 
+ => [api] exporting to image                                                                                                                    0.0s 
+ => => exporting layers                                                                                                                         0.0s 
+ => => writing image sha256:a47a3286b5f2e0fb370c6688d930f65b1296337e4b8f19dba80edfd64a6c65fc                                                    0.0s 
+ => => naming to docker.io/library/simer-node-demo-api                                                                                          0.0s 
+ => [api] resolving provenance for metadata file                                                                                                0.0s 
+ => [frontend internal] load build definition from Dockerfile                                                                                   0.0s
+ => => transferring dockerfile: 278B                                                                                                            0.0s 
+ => [frontend internal] load .dockerignore                                                                                                      0.0s
+ => => transferring context: 166B                                                                                                               0.0s 
+ => [frontend internal] load build context                                                                                                      0.0s 
+ => => transferring context: 2.99kB                                                                                                             0.0s 
+ => CACHED [frontend 3/6] COPY package.json ./                                                                                                  0.0s 
+ => CACHED [frontend 4/6] RUN npm install                                                                                                       0.0s 
+ => CACHED [frontend 5/6] RUN apk update && apk add xdg-utils                                                                                   0.0s 
+ => CACHED [frontend 6/6] COPY . .                                                                                                              0.0s 
+ => [frontend] exporting to image                                                                                                               0.0s 
+ => => exporting layers                                                                                                                         0.0s 
+ => => writing image sha256:855dcee0635b5df5c00a4ee277ceaab867c59f7df6d65d663bf645f5970a7e72                                                    0.0s 
+ => => naming to docker.io/library/simer-node-demo-frontend                                                                                     0.0s 
+ => [frontend] resolving provenance for metadata file                                                                                           0.0s 
+[+] Running 4/4
+ ✔ Network simer-node-demo_default       Created                                                                                                0.2s 
+ ✔ Container simer-node-demo-mysql-1     Healthy                                                                                               20.3s 
+ ✔ Container simer-node-demo-api-1       Started                                                                                               20.9s 
+ ✔ Container simer-node-demo-frontend-1  Started                                                                                               19.9s 
+[ec2-user@ip-172-31-20-171 simer-node-demo]$ docker ps
+CONTAINER ID   IMAGE                      COMMAND                  CREATED          STATUS                    PORTS                                  
+                NAMES
+c8de56643599   simer-node-demo-frontend   "docker-entrypoint.s…"   24 seconds ago   Up 4 seconds              0.0.0.0:5173->5173/tcp, :::5173->5173/tcp              simer-node-demo-frontend-1
+4579ba893b59   simer-node-demo-api        "docker-entrypoint.s…"   26 seconds ago   Up 4 seconds              0.0.0.0:4000->4000/tcp, :::4000->4000/tcp              simer-node-demo-api-1
+585d3ec570f3   mysql:8.4                  "docker-entrypoint.s…"   26 seconds ago   Up 16 seconds (healthy)   0.0.0.0:3306->3306/tcp, :::3306->3306/tcp, 33060/tcp   simer-node-demo-mysql-1
+[ec2-user@ip-172-31-20-171 simer-node-demo]$ curl http://localhost:4000
+{"message":"Cafe Coffee Day API is running."}[ec2-user@ip-172-31-20-171 simer-node-demo]$ 
