@@ -60,6 +60,54 @@ pipeline {
         archiveArtifacts artifacts: 'frontend/dist/**/*', onlyIfSuccessful: true
       }
     }
+    stage('Container build & deploy') {
+      steps {
+        echo 'Building Docker images for backend and frontend services.'
+        sh 'docker compose -f docker-compose.yml build --parallel'
+
+        echo 'Deploying to EC2 via SSH (docker compose up -d).'
+        script {
+          def repoUrl = sh(returnStdout: true, script: 'git config --get remote.origin.url').trim()
+          sshagent (credentials: [env.SSH_KEY_CREDENTIALS]) {
+            sh """
+              ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} <<'DEPLOY'
+              set -e
+              echo "Preparing deployment directory on EC2 host."
+              mkdir -p ~/simer-node-demo
+              cd ~/simer-node-demo
+
+              echo "Ensuring git is installed."
+              sudo dnf install -y git
+
+              if [ ! -d .git ]; then
+                echo "Cloning repository for the first time."
+                git clone '${repoUrl}' .
+              else
+                echo "Fetching latest changes."
+                git fetch --all
+              fi
+
+              echo "Checking out main branch."
+              git checkout main
+              git pull origin main
+
+              echo "Copying environment file for frontend (if present)."
+              if [ -f .env ]; then
+                cp .env frontend/.env
+              fi
+
+              echo "Launching containers with docker compose."
+              docker compose -f docker-compose.yml pull || true
+              docker compose -f docker-compose.yml up -d --build
+
+              echo "Pruning old Docker resources (safe cleanup)."
+              docker system prune -af --volumes --filter "until=72h" || true
+              DEPLOY
+            """
+          }
+        }
+      }
+    }
 
     stage('Container build & deploy (main only)') {
       when {

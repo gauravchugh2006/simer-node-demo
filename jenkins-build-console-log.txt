@@ -1,0 +1,112 @@
+Started by user jenkins
+Obtained Jenkinsfile from git https://github.com/gauravchugh2006/simer-node-demo.git
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/lib/jenkins/workspace/simer-node-demo-pipeline
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] timestamps
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Checkout)
+[Pipeline] echo
+[2025-12-10T21:16:15.648Z] Checking out source code from main branch.
+[Pipeline] checkout
+[2025-12-10T21:16:15.703Z] Selected Git installation does not exist. Using Default
+[2025-12-10T21:16:15.704Z] The recommended git tool is: NONE
+[2025-12-10T21:16:15.705Z] using credential github-token-simer-node-demo
+[2025-12-10T21:16:15.712Z]  > git rev-parse --resolve-git-dir /var/lib/jenkins/workspace/simer-node-demo-pipeline/.git # timeout=10
+[2025-12-10T21:16:15.727Z] Fetching changes from the remote Git repository
+[2025-12-10T21:16:15.730Z]  > git config remote.origin.url https://github.com/gauravchugh2006/simer-node-demo.git # timeout=10
+[2025-12-10T21:16:15.736Z] Fetching upstream changes from https://github.com/gauravchugh2006/simer-node-demo.git
+[2025-12-10T21:16:15.736Z]  > git --version # timeout=10
+[2025-12-10T21:16:15.742Z]  > git --version # 'git version 2.50.1'
+[2025-12-10T21:16:15.742Z] using GIT_ASKPASS to set credentials github-token-simer-node-demo
+[2025-12-10T21:16:15.750Z]  > git fetch --tags --force --progress -- https://github.com/gauravchugh2006/simer-node-demo.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+[2025-12-10T21:16:16.035Z]  > git rev-parse refs/remotes/origin/main^{commit} # timeout=10
+[2025-12-10T21:16:16.040Z] Checking out Revision f1b485efd2d2bffeb16ebca15be4740745d42113 (refs/remotes/origin/main)
+[2025-12-10T21:16:16.040Z]  > git config core.sparsecheckout # timeout=10
+[2025-12-10T21:16:16.045Z]  > git checkout -f f1b485efd2d2bffeb16ebca15be4740745d42113 # timeout=10
+[2025-12-10T21:16:16.082Z] Commit message: "Refactor EC2 deployment and user-data scripts: enhance key pair management, improve security group handling, and streamline Jenkins setup with better logging and cleanup processes."
+[2025-12-10T21:16:16.088Z]  > git rev-list --no-walk f1b485efd2d2bffeb16ebca15be4740745d42113 # timeout=10
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Node version check)
+[Pipeline] echo
+[2025-12-10T21:16:16.233Z] Ensuring Node.js 18 is available on the agent.
+[Pipeline] sh
+[2025-12-10T21:16:16.501Z] + node -v
+[2025-12-10T21:16:16.501Z] v18.20.8
+[2025-12-10T21:16:16.501Z] + npm -v
+[2025-12-10T21:16:16.752Z] 10.8.2
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Backend dependencies)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] echo
+[2025-12-10T21:16:16.909Z] Installing backend dependencies (lightweight mode: true).
+[Pipeline] sh
+[2025-12-10T21:16:17.182Z] + npm install --prefer-offline --no-audit --prefix backend
+[2025-12-10T21:16:18.527Z] 
+[2025-12-10T21:16:18.527Z] up to date in 1s
+[2025-12-10T21:16:18.527Z] 
+[2025-12-10T21:16:18.527Z] 23 packages are looking for funding
+[2025-12-10T21:16:18.527Z]   run `npm fund` for details
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Frontend build)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] echo
+[2025-12-10T21:16:18.707Z] Installing frontend dependencies (lightweight mode: true).
+[Pipeline] sh
+[2025-12-10T21:16:18.975Z] + npm install --prefer-offline --no-audit --prefix frontend
+[2025-12-10T21:16:19.887Z] 
+[2025-12-10T21:16:19.887Z] added 1 package in 926ms
+[2025-12-10T21:16:19.887Z] 
+[2025-12-10T21:16:19.887Z] 32 packages are looking for funding
+[2025-12-10T21:16:19.887Z]   run `npm fund` for details
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] echo
+[2025-12-10T21:16:19.942Z] Building frontend artifacts.
+[Pipeline] sh
+[2025-12-10T21:16:20.209Z] + npm run build --prefix frontend
+[2025-12-10T21:16:20.210Z] 
+[2025-12-10T21:16:20.210Z] > ccd-frontend@1.0.0 build
+[2025-12-10T21:16:20.210Z] > vite build
+[2025-12-10T21:16:20.210Z] 
+[2025-12-10T21:16:20.770Z] [36mvite v5.4.21 [32mbuilding for production...[36m[39m
+[2025-12-10T21:16:21.682Z] transforming...
+[2025-12-10T21:16:25.809Z] [32m✓[39m 749 modules transformed.
+[2025-12-10T21:16:26.385Z] rendering chunks...
+[2025-12-10T21:16:26.386Z] computing gzip size...
+[2025-12-10T21:16:26.386Z] [2mdist/[22m[32mindex.html                 [39m[1m[2m  0.74 kB[22m[1m[22m[2m │ gzip:  0.41 kB[22m
+[2025-12-10T21:16:26.387Z] [2mdist/[22m[2massets/[22m[35mindex-BAPr-Wry.css  [39m[1m[2m 22.36 kB[22m[1m[22m[2m │ gzip:  5.05 kB[22m
+[2025-12-10T21:16:26.387Z] [2mdist/[22m[2massets/[22m[36mindex-B2EH3lI0.js   [39m[1m[2m244.03 kB[22m[1m[22m[2m │ gzip: 79.17 kB[22m
+[2025-12-10T21:16:26.387Z] [32m✓ built in 4.74s[39m
+[Pipeline] archiveArtifacts
+[2025-12-10T21:16:26.870Z] Archiving artifacts
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Container build & deploy (main only))
+Stage "Container build & deploy (main only)" skipped due to when conditional
+[Pipeline] getContext
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // timestamps
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS

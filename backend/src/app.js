@@ -8,33 +8,54 @@ import requestLogger from './middleware/requestLogger.js';
 import swaggerSpec from './utils/swagger.js';
 import { logError } from './utils/logger.js';
 
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://51.20.119.78:5173',
-  'http://ec2-51-20-119-78.eu-north-1.compute.amazonaws.com:5173'
-];
+// IMPORTANT: load env BEFORE reading process.env
+dotenv.config();
+
+// 1. Build allowed origins from env instead of hardcoding IPs
+const defaultOrigins = ['http://localhost:5173'];
+
+const envOrigins = [];
+
+// Single main origin – for your EC2 frontend
+if (process.env.FRONTEND_ORIGIN) {
+  envOrigins.push(process.env.FRONTEND_ORIGIN);
+}
+
+// Optional comma-separated list: "http://foo:5173,http://bar:5173"
+if (process.env.EXTRA_ALLOWED_ORIGINS) {
+  envOrigins.push(
+    ...process.env.EXTRA_ALLOWED_ORIGINS
+      .split(',')
+      .map(o => o.trim())
+      .filter(Boolean)
+  );
+}
+
+const allowedOrigins = [...new Set([...defaultOrigins, ...envOrigins])];
+
+console.log('[CORS] Allowed origins:', allowedOrigins);
+
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow non-browser / curl (no origin) and allowed origins
+    // allow non-browser tools (no Origin header) + whitelisted origins
     if (!origin || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
+    console.warn('[CORS] Blocked origin:', origin);
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
 };
-const corsOptionsOld = {
-  origin: '*',
-  allowedHeaders: ['Content-Type', 'Authorization']
-  // credentials: true,
-};
-dotenv.config();
+
+// keep this around only if you ever want to temporarily allow everything
+// const corsOptionsOld = {
+//   origin: '*',
+//   allowedHeaders: ['Content-Type', 'Authorization'],
+// };
 
 const app = express();
 
-app.use(
-  cors(corsOptions)
-);
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(requestLogger);
 
