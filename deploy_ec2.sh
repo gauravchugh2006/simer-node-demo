@@ -196,10 +196,12 @@ fi
 
 echo "[BOOTSTRAP] Detected public IP: $PUBLIC_IP"
 
-# Create .env for Vite frontend
-echo "[BOOTSTRAP] Writing .env for frontend..."
+# Create .env for Vite frontend and backend CORS
+echo "[BOOTSTRAP] Writing .env for frontend/backend..."
 cat > .env <<EOT
 VITE_API_BASE_URL=http://$PUBLIC_IP:4000
+FRONTEND_ORIGIN=http://$PUBLIC_IP:5173
+EXTRA_ALLOWED_ORIGINS=http://localhost:5173
 EOT
 
 echo "[BOOTSTRAP] Running docker compose up -d --build..."

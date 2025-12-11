@@ -46,6 +46,14 @@ A responsive cafe ordering experience powered by a Node.js middleware API, a MyS
    ```
    Adjust the `.env` files if you need to customise ports or credentials.
 
+### Environment variables (shared via `.env`)
+
+- `VITE_API_BASE_URL` – URL the React app calls (e.g., `http://localhost:4000` or `http://<public-ip>:4000`).
+- `FRONTEND_ORIGIN` – Primary origin allowed by the API CORS (e.g., `http://<public-ip>:5173`).
+- `EXTRA_ALLOWED_ORIGINS` – Comma-separated extras for CORS (defaults include `http://localhost:5173` in the deploy script).
+
+The provided `deploy_ec2.sh` now writes all three values automatically using the detected EC2 public IP, so the frontend and backend stay in sync after each deploy.
+
 3. **Launch with Docker Compose**
    - Start Docker Desktop (or your Docker Engine service) and ensure it is running in **Linux container** mode.
    - From the project root, run:
