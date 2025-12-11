@@ -1,0 +1,259 @@
+Started by GitHub push by gauravchugh2006
+Obtained Jenkinsfile from git https://github.com/gauravchugh2006/simer-node-demo.git
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/lib/jenkins/workspace/simer-node-demo-pipeline
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] timestamps
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Checkout)
+[Pipeline] echo
+[2025-12-11T02:20:09.179Z] Checking out source code from main branch.
+[Pipeline] checkout
+[2025-12-11T02:20:09.205Z] Selected Git installation does not exist. Using Default
+[2025-12-11T02:20:09.206Z] The recommended git tool is: NONE
+[2025-12-11T02:20:09.207Z] using credential github-token-simer-node-demo
+[2025-12-11T02:20:09.212Z]  > git rev-parse --resolve-git-dir /var/lib/jenkins/workspace/simer-node-demo-pipeline/.git # timeout=10
+[2025-12-11T02:20:09.224Z] Fetching changes from the remote Git repository
+[2025-12-11T02:20:09.226Z]  > git config remote.origin.url https://github.com/gauravchugh2006/simer-node-demo.git # timeout=10
+[2025-12-11T02:20:09.247Z] Fetching upstream changes from https://github.com/gauravchugh2006/simer-node-demo.git
+[2025-12-11T02:20:09.247Z]  > git --version # timeout=10
+[2025-12-11T02:20:09.254Z]  > git --version # 'git version 2.50.1'
+[2025-12-11T02:20:09.254Z] using GIT_ASKPASS to set credentials github-token-simer-node-demo
+[2025-12-11T02:20:09.263Z]  > git fetch --tags --force --progress -- https://github.com/gauravchugh2006/simer-node-demo.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+[2025-12-11T02:20:09.689Z]  > git rev-parse refs/remotes/origin/main^{commit} # timeout=10
+[2025-12-11T02:20:09.696Z] Checking out Revision 5db26716d1b3a863573fe47613d23333fd30a8e8 (refs/remotes/origin/main)
+[2025-12-11T02:20:09.696Z]  > git config core.sparsecheckout # timeout=10
+[2025-12-11T02:20:09.705Z]  > git checkout -f 5db26716d1b3a863573fe47613d23333fd30a8e8 # timeout=10
+[2025-12-11T02:20:09.718Z] Commit message: "Merge pull request #9 from gauravchugh2006/codex/fix-stray-line-in-jenkinsfile"
+[2025-12-11T02:20:09.718Z]  > git rev-list --no-walk d47c68603694079c59c447fb19e721a9ecc7565f # timeout=10
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Node version check)
+[Pipeline] echo
+[2025-12-11T02:20:09.847Z] Ensuring Node.js 18 is available on the agent.
+[Pipeline] sh
+[2025-12-11T02:20:10.115Z] + node -v
+[2025-12-11T02:20:10.115Z] v18.20.8
+[2025-12-11T02:20:10.115Z] + npm -v
+[2025-12-11T02:20:10.367Z] 10.8.2
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Backend dependencies)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] echo
+[2025-12-11T02:20:10.504Z] Installing backend dependencies (lightweight mode: false).
+[Pipeline] sh
+[2025-12-11T02:20:10.775Z] + npm install --audit=false --prefix backend
+[2025-12-11T02:20:12.119Z] 
+[2025-12-11T02:20:12.119Z] up to date in 1s
+[2025-12-11T02:20:12.119Z] 
+[2025-12-11T02:20:12.119Z] 23 packages are looking for funding
+[2025-12-11T02:20:12.119Z]   run `npm fund` for details
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Frontend build)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] echo
+[2025-12-11T02:20:12.282Z] Installing frontend dependencies (lightweight mode: false).
+[Pipeline] sh
+[2025-12-11T02:20:12.550Z] + npm install --audit=false --prefix frontend
+[2025-12-11T02:20:13.461Z] 
+[2025-12-11T02:20:13.462Z] up to date in 760ms
+[2025-12-11T02:20:13.462Z] 
+[2025-12-11T02:20:13.462Z] 32 packages are looking for funding
+[2025-12-11T02:20:13.462Z]   run `npm fund` for details
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] echo
+[2025-12-11T02:20:13.513Z] Building frontend artifacts.
+[Pipeline] sh
+[2025-12-11T02:20:13.781Z] + npm run build --prefix frontend
+[2025-12-11T02:20:13.781Z] 
+[2025-12-11T02:20:13.781Z] > ccd-frontend@1.0.0 build
+[2025-12-11T02:20:13.781Z] > vite build
+[2025-12-11T02:20:13.781Z] 
+[2025-12-11T02:20:14.332Z] [36mvite v5.4.21 [32mbuilding for production...[36m[39m
+[2025-12-11T02:20:15.243Z] transforming...
+[2025-12-11T02:20:19.366Z] [32m✓[39m 750 modules transformed.
+[2025-12-11T02:20:19.368Z] rendering chunks...
+[2025-12-11T02:20:19.368Z] computing gzip size...
+[2025-12-11T02:20:19.368Z] [2mdist/[22m[32mindex.html                 [39m[1m[2m  0.74 kB[22m[1m[22m[2m │ gzip:  0.41 kB[22m
+[2025-12-11T02:20:19.368Z] [2mdist/[22m[2massets/[22m[35mindex-D8QCnXRh.css  [39m[1m[2m 23.48 kB[22m[1m[22m[2m │ gzip:  5.30 kB[22m
+[2025-12-11T02:20:19.368Z] [2mdist/[22m[2massets/[22m[36mindex-ChZqOzRl.js   [39m[1m[2m245.29 kB[22m[1m[22m[2m │ gzip: 79.60 kB[22m
+[2025-12-11T02:20:19.368Z] [32m✓ built in 4.23s[39m
+[Pipeline] archiveArtifacts
+[2025-12-11T02:20:19.486Z] Archiving artifacts
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Container build & deploy)
+[Pipeline] echo
+[2025-12-11T02:20:19.760Z] Building Docker images for backend and frontend services.
+[Pipeline] sh
+[2025-12-11T02:20:20.059Z] + docker compose -f docker-compose.yml build --parallel
+[2025-12-11T02:20:21.405Z] #0 building with "default" instance using docker driver
+[2025-12-11T02:20:21.406Z] 
+[2025-12-11T02:20:21.406Z] #1 [api internal] load build definition from Dockerfile
+[2025-12-11T02:20:21.406Z] #1 transferring dockerfile: 224B done
+[2025-12-11T02:20:21.406Z] #1 DONE 0.0s
+[2025-12-11T02:20:21.406Z] 
+[2025-12-11T02:20:21.406Z] #2 [api internal] load metadata for docker.io/library/node:20-alpine
+[2025-12-11T02:20:21.406Z] #2 DONE 0.4s
+[2025-12-11T02:20:21.656Z] 
+[2025-12-11T02:20:21.656Z] #3 [api internal] load .dockerignore
+[2025-12-11T02:20:21.656Z] #3 transferring context: 160B done
+[2025-12-11T02:20:21.656Z] #3 DONE 0.0s
+[2025-12-11T02:20:21.656Z] 
+[2025-12-11T02:20:21.656Z] #4 [api 1/5] FROM docker.io/library/node:20-alpine@sha256:643e7036aa985317ebfee460005e322aa550c6b6883000d01daefb58689a58e2
+[2025-12-11T02:20:21.656Z] #4 DONE 0.0s
+[2025-12-11T02:20:21.656Z] 
+[2025-12-11T02:20:21.657Z] #5 [api internal] load build context
+[2025-12-11T02:20:21.657Z] #5 transferring context: 70.41kB done
+[2025-12-11T02:20:21.657Z] #5 DONE 0.0s
+[2025-12-11T02:20:21.657Z] 
+[2025-12-11T02:20:21.657Z] #6 [api 3/5] COPY package.json ./
+[2025-12-11T02:20:21.657Z] #6 CACHED
+[2025-12-11T02:20:21.657Z] 
+[2025-12-11T02:20:21.657Z] #7 [api 4/5] RUN npm install --production
+[2025-12-11T02:20:21.657Z] #7 CACHED
+[2025-12-11T02:20:21.657Z] 
+[2025-12-11T02:20:21.657Z] #8 [api 2/5] WORKDIR /app
+[2025-12-11T02:20:21.657Z] #8 CACHED
+[2025-12-11T02:20:21.657Z] 
+[2025-12-11T02:20:21.657Z] #9 [api 5/5] COPY . .
+[2025-12-11T02:20:21.657Z] #9 CACHED
+[2025-12-11T02:20:21.657Z] 
+[2025-12-11T02:20:21.657Z] #10 [api] exporting to image
+[2025-12-11T02:20:21.657Z] #10 exporting layers done
+[2025-12-11T02:20:21.657Z] #10 writing image sha256:736cb8a727977fa21d3be9f18c2b2bfa48207c7ccaa02345e29a769e02e1051b done
+[2025-12-11T02:20:21.657Z] #10 naming to docker.io/library/simer-node-demo-api done
+[2025-12-11T02:20:21.657Z] #10 DONE 0.0s
+[2025-12-11T02:20:21.657Z] 
+[2025-12-11T02:20:21.657Z] #11 [api] resolving provenance for metadata file
+[2025-12-11T02:20:21.657Z] #11 DONE 0.0s
+[2025-12-11T02:20:21.908Z] 
+[2025-12-11T02:20:21.908Z] #12 [frontend internal] load build definition from Dockerfile
+[2025-12-11T02:20:21.908Z] #12 transferring dockerfile: 272B done
+[2025-12-11T02:20:21.908Z] #12 DONE 0.0s
+[2025-12-11T02:20:21.908Z] 
+[2025-12-11T02:20:21.910Z] #2 [frontend internal] load metadata for docker.io/library/node:20-alpine
+[2025-12-11T02:20:21.910Z] #2 DONE 0.6s
+[2025-12-11T02:20:22.162Z] 
+[2025-12-11T02:20:22.162Z] #13 [frontend internal] load .dockerignore
+[2025-12-11T02:20:22.162Z] #13 transferring context: 160B done
+[2025-12-11T02:20:22.162Z] #13 DONE 0.0s
+[2025-12-11T02:20:22.162Z] 
+[2025-12-11T02:20:22.162Z] #4 [frontend 1/6] FROM docker.io/library/node:20-alpine@sha256:643e7036aa985317ebfee460005e322aa550c6b6883000d01daefb58689a58e2
+[2025-12-11T02:20:22.162Z] #4 DONE 0.0s
+[2025-12-11T02:20:22.162Z] 
+[2025-12-11T02:20:22.162Z] #14 [frontend internal] load build context
+[2025-12-11T02:20:22.162Z] #14 transferring context: 372.40kB 0.0s done
+[2025-12-11T02:20:22.162Z] #14 DONE 0.0s
+[2025-12-11T02:20:22.162Z] 
+[2025-12-11T02:20:22.162Z] #8 [frontend 2/6] WORKDIR /app
+[2025-12-11T02:20:22.162Z] #8 CACHED
+[2025-12-11T02:20:22.162Z] 
+[2025-12-11T02:20:22.162Z] #15 [frontend 3/6] COPY package.json ./
+[2025-12-11T02:20:22.162Z] #15 CACHED
+[2025-12-11T02:20:22.162Z] 
+[2025-12-11T02:20:22.162Z] #16 [frontend 4/6] RUN npm install
+[2025-12-11T02:20:22.162Z] #16 CACHED
+[2025-12-11T02:20:22.162Z] 
+[2025-12-11T02:20:22.162Z] #17 [frontend 5/6] RUN apk update && apk add xdg-utils
+[2025-12-11T02:20:22.162Z] #17 CACHED
+[2025-12-11T02:20:22.162Z] 
+[2025-12-11T02:20:22.162Z] #18 [frontend 6/6] COPY . .
+[2025-12-11T02:20:22.162Z] #18 CACHED
+[2025-12-11T02:20:22.162Z] 
+[2025-12-11T02:20:22.162Z] #19 [frontend] exporting to image
+[2025-12-11T02:20:22.162Z] #19 exporting layers done
+[2025-12-11T02:20:22.162Z] #19 writing image sha256:8822e6609fb2244431c375ec616b8922bce1a6e5833051f4f7be1594f2c8a1cd done
+[2025-12-11T02:20:22.162Z] #19 naming to docker.io/library/simer-node-demo-frontend done
+[2025-12-11T02:20:22.162Z] #19 DONE 0.0s
+[2025-12-11T02:20:22.162Z] 
+[2025-12-11T02:20:22.162Z] #20 [frontend] resolving provenance for metadata file
+[2025-12-11T02:20:22.162Z] #20 DONE 0.0s
+[Pipeline] echo
+[2025-12-11T02:20:22.193Z] Deploying to EC2 via SSH (docker compose up -d).
+[Pipeline] script
+[Pipeline] {
+[Pipeline] sh
+[2025-12-11T02:20:22.522Z] + git config --get remote.origin.url
+[Pipeline] withCredentials
+[2025-12-11T02:20:23.572Z] Masking supported pattern matches of $SSH_KEY_FILE
+[Pipeline] {
+[Pipeline] sh
+[2025-12-11T02:20:24.240Z] Warning: A secret was passed to "sh" using Groovy String interpolation, which is insecure.
+[2025-12-11T02:20:24.240Z] 		 Affected argument(s) used the following variable(s): [SSH_KEY_FILE]
+[2025-12-11T02:20:24.240Z] 		 See https://jenkins.io/redirect/groovy-string-interpolation for details.
+[2025-12-11T02:20:24.502Z] /var/lib/jenkins/workspace/simer-node-demo-pipeline@tmp/durable-fddee4fe/script.sh.copy: line 37: warning: here-document at line 2 delimited by end-of-file (wanted `DEPLOY')
+[2025-12-11T02:20:24.503Z] + ssh -o StrictHostKeyChecking=no -i **** ec2-user@ec2-51-20-66-150.eu-north-1.compute.amazonaws.com
+[2025-12-11T02:20:24.503Z] Pseudo-terminal will not be allocated because stdin is not a terminal.
+[2025-12-11T02:20:24.504Z] Warning: Permanently added 'ec2-51-20-66-150.eu-north-1.compute.amazonaws.com' (ED25519) to the list of known hosts.
+[2025-12-11T02:20:25.056Z]    ,     #_
+[2025-12-11T02:20:25.057Z]    ~\_  ####_        Amazon Linux 2023
+[2025-12-11T02:20:25.057Z]   ~~  \_#####\
+[2025-12-11T02:20:25.057Z]   ~~     \###|
+[2025-12-11T02:20:25.057Z]   ~~       \#/ ___   https://aws.amazon.com/linux/amazon-linux-2023
+[2025-12-11T02:20:25.057Z]    ~~       V~' '->
+[2025-12-11T02:20:25.058Z]     ~~~         /
+[2025-12-11T02:20:25.058Z]       ~~._.   _/
+[2025-12-11T02:20:25.058Z]          _/ _/
+[2025-12-11T02:20:25.058Z]        _/m/'
+[2025-12-11T02:20:25.308Z] Preparing deployment directory on EC2 host.
+[2025-12-11T02:20:25.308Z] Ensuring git is installed.
+[2025-12-11T02:20:37.417Z] Amazon Linux 2023 Kernel Livepatch repository   128 kB/s |  29 kB     00:00    
+[2025-12-11T02:20:37.685Z] Jenkins-stable                                  6.9 kB/s | 833  B     00:00    
+[2025-12-11T02:20:37.685Z] Jenkins-stable                                  159 kB/s | 3.1 kB     00:00    
+[2025-12-11T02:20:37.686Z] Importing GPG key 0xEF5975CA:
+[2025-12-11T02:20:37.686Z]  Userid     : "Jenkins Project <jenkinsci-board@googlegroups.com>"
+[2025-12-11T02:20:37.687Z]  Fingerprint: 6366 7EE7 4BBA 1F0A 08A6 9872 5BA3 1D57 EF59 75CA
+[2025-12-11T02:20:37.687Z]  From       : https://pkg.jenkins.io/redhat-stable/repodata/repomd.xml.key
+[2025-12-11T02:20:37.687Z] Jenkins-stable                                   16 kB/s | 1.4 kB     00:00    
+[2025-12-11T02:20:39.551Z] Package git-2.50.1-1.amzn2023.0.1.x86_64 is already installed.
+[2025-12-11T02:20:39.554Z] Dependencies resolved.
+[2025-12-11T02:20:39.554Z] Nothing to do.
+[2025-12-11T02:20:39.554Z] Complete!
+[2025-12-11T02:20:40.471Z] Fetching latest changes.
+[2025-12-11T02:20:41.023Z] From https://github.com/gauravchugh2006/simer-node-demo
+[2025-12-11T02:20:41.023Z]    f1b485e..5db2671  main       -> origin/main
+[2025-12-11T02:20:41.023Z]  * [new branch]      codex/add-lightweight-snow-animation-plugin -> origin/codex/add-lightweight-snow-animation-plugin
+[2025-12-11T02:20:41.024Z]  * [new branch]      codex/fix-stray-line-in-jenkinsfile -> origin/codex/fix-stray-line-in-jenkinsfile
+[2025-12-11T02:20:41.024Z] Checking out main branch.
+[2025-12-11T02:20:41.024Z] Already on 'main'
+[2025-12-11T02:20:41.024Z] M	.env
+[2025-12-11T02:20:41.024Z] Your branch is behind 'origin/main' by 10 commits, and can be fast-forwarded.
+[2025-12-11T02:20:41.024Z]   (use "git pull" to update your local branch)
+[2025-12-11T02:20:41.274Z] From https://github.com/gauravchugh2006/simer-node-demo
+[2025-12-11T02:20:41.274Z]  * branch            main       -> FETCH_HEAD
+[2025-12-11T02:20:41.275Z] error: Your local changes to the following files would be overwritten by merge:
+[2025-12-11T02:20:41.275Z] 	.env
+[2025-12-11T02:20:41.275Z] Please commit your changes or stash them before you merge.
+[2025-12-11T02:20:41.275Z] Aborting
+[2025-12-11T02:20:41.276Z] Updating f1b485e..5db2671
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // timestamps
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+ERROR: script returned exit code 1
+Finished: FAILURE
