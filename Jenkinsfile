@@ -68,9 +68,14 @@ pipeline {
         echo 'Deploying to EC2 via SSH (docker compose up -d).'
         script {
           def repoUrl = sh(returnStdout: true, script: 'git config --get remote.origin.url').trim()
-          sshagent (credentials: [env.SSH_KEY_CREDENTIALS]) {
+          withCredentials([
+            sshUserPrivateKey(
+              credentialsId: env.SSH_KEY_CREDENTIALS,
+              keyFileVariable: 'SSH_KEY_FILE'
+            )
+          ]) {
             sh """
-              ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} <<'DEPLOY'
+              ssh -o StrictHostKeyChecking=no -i "${SSH_KEY_FILE}" ${EC2_USER}@${EC2_HOST} <<'DEPLOY'
               set -e
               echo "Preparing deployment directory on EC2 host."
               mkdir -p ~/simer-node-demo
