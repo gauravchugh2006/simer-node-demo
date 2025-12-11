@@ -88,16 +88,26 @@ pipeline {
                 echo "Cloning repository for the first time."
                 git clone '${repoUrl}' .
               else
-                echo "Fetching latest changes."
-                git fetch --all
-              fi
+              echo "Fetching latest changes."
+              git fetch --all
+            fi
 
-              echo "Checking out main branch."
-              git checkout main
-              git pull origin main
+            echo "Checking out main branch."
+            git checkout main
 
-              echo "Copying environment file for frontend (if present)."
-              if [ -f .env ]; then
+            # Preserve local environment overrides while refreshing code.
+            if [ -f .env ]; then
+              cp .env /tmp/simer-node-demo.env.bak
+            fi
+
+            git reset --hard origin/main
+
+            if [ -f /tmp/simer-node-demo.env.bak ]; then
+              mv /tmp/simer-node-demo.env.bak .env
+            fi
+
+            echo "Copying environment file for frontend (if present)."
+            if [ -f .env ]; then
                 cp .env frontend/.env
               fi
 
