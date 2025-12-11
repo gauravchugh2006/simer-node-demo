@@ -96,13 +96,15 @@ pipeline {
                 cp .env frontend/.env
               fi
 
-              echo "Launching containers with docker compose."
+              echo "[DEPLOY] Launching containers with docker compose."
               docker compose -f docker-compose.yml pull || true
-              docker compose -f docker-compose.yml up -d --build
+              echo "[DEPLOY] Building and starting containers..."
+              docker compose -f docker-compose.yml -p "$COMPOSE_PROJECT_NAME" up -d --build
 
-              echo "Pruning old Docker resources (safe cleanup)."
+              echo "[DEPLOY] Pruning old Docker resources (safe cleanup)."
               docker system prune -af --volumes --filter "until=72h" || true
-              DEPLOY
+              echo "[DEPLOY] Current containers:"
+              docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Ports}}"
             """
           }
         }
