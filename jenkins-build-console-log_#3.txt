@@ -1,0 +1,323 @@
+Started by GitHub push by gauravchugh2006
+Obtained Jenkinsfile from git https://github.com/gauravchugh2006/simer-node-demo.git
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/lib/jenkins/workspace/simer-node-demo-pipeline
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] timestamps
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Checkout)
+[Pipeline] echo
+[2025-12-11T01:24:57.092Z] Checking out source code from main branch.
+[Pipeline] checkout
+[2025-12-11T01:24:57.119Z] Selected Git installation does not exist. Using Default
+[2025-12-11T01:24:57.119Z] The recommended git tool is: NONE
+[2025-12-11T01:24:57.120Z] using credential github-token-simer-node-demo
+[2025-12-11T01:24:57.128Z]  > git rev-parse --resolve-git-dir /var/lib/jenkins/workspace/simer-node-demo-pipeline/.git # timeout=10
+[2025-12-11T01:24:57.134Z] Fetching changes from the remote Git repository
+[2025-12-11T01:24:57.136Z]  > git config remote.origin.url https://github.com/gauravchugh2006/simer-node-demo.git # timeout=10
+[2025-12-11T01:24:57.140Z] Fetching upstream changes from https://github.com/gauravchugh2006/simer-node-demo.git
+[2025-12-11T01:24:57.140Z]  > git --version # timeout=10
+[2025-12-11T01:24:57.143Z]  > git --version # 'git version 2.50.1'
+[2025-12-11T01:24:57.143Z] using GIT_ASKPASS to set credentials github-token-simer-node-demo
+[2025-12-11T01:24:57.154Z]  > git fetch --tags --force --progress -- https://github.com/gauravchugh2006/simer-node-demo.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+[2025-12-11T01:24:57.594Z]  > git rev-parse refs/remotes/origin/main^{commit} # timeout=10
+[2025-12-11T01:24:57.599Z] Checking out Revision 0558ea27a5ad229a91cc6feb53be92fc03492346 (refs/remotes/origin/main)
+[2025-12-11T01:24:57.600Z]  > git config core.sparsecheckout # timeout=10
+[2025-12-11T01:24:57.603Z]  > git checkout -f 0558ea27a5ad229a91cc6feb53be92fc03492346 # timeout=10
+[2025-12-11T01:24:57.619Z] Commit message: "Update environment variables in .env and comment out container build & deploy stage in Jenkinsfile"
+[2025-12-11T01:24:57.620Z]  > git rev-list --no-walk f1b485efd2d2bffeb16ebca15be4740745d42113 # timeout=10
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Node version check)
+[Pipeline] echo
+[2025-12-11T01:24:57.764Z] Ensuring Node.js 18 is available on the agent.
+[Pipeline] sh
+[2025-12-11T01:24:58.060Z] + node -v
+[2025-12-11T01:24:58.061Z] v18.20.8
+[2025-12-11T01:24:58.061Z] + npm -v
+[2025-12-11T01:24:58.619Z] 10.8.2
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Backend dependencies)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] echo
+[2025-12-11T01:24:58.831Z] Installing backend dependencies (lightweight mode: false).
+[Pipeline] sh
+[2025-12-11T01:24:59.112Z] + npm install --audit=false --prefix backend
+[2025-12-11T01:25:00.456Z] 
+[2025-12-11T01:25:00.456Z] up to date in 1s
+[2025-12-11T01:25:00.456Z] 
+[2025-12-11T01:25:00.456Z] 23 packages are looking for funding
+[2025-12-11T01:25:00.456Z]   run `npm fund` for details
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Frontend build)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] echo
+[2025-12-11T01:25:00.645Z] Installing frontend dependencies (lightweight mode: false).
+[Pipeline] sh
+[2025-12-11T01:25:00.940Z] + npm install --audit=false --prefix frontend
+[2025-12-11T01:25:01.853Z] 
+[2025-12-11T01:25:01.853Z] up to date in 924ms
+[2025-12-11T01:25:01.853Z] 
+[2025-12-11T01:25:01.853Z] 32 packages are looking for funding
+[2025-12-11T01:25:01.853Z]   run `npm fund` for details
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] echo
+[2025-12-11T01:25:01.933Z] Building frontend artifacts.
+[Pipeline] sh
+[2025-12-11T01:25:02.210Z] + npm run build --prefix frontend
+[2025-12-11T01:25:02.210Z] 
+[2025-12-11T01:25:02.210Z] > ccd-frontend@1.0.0 build
+[2025-12-11T01:25:02.210Z] > vite build
+[2025-12-11T01:25:02.210Z] 
+[2025-12-11T01:25:02.762Z] [36mvite v5.4.21 [32mbuilding for production...[36m[39m
+[2025-12-11T01:25:04.107Z] transforming...
+[2025-12-11T01:25:09.311Z] [32m✓[39m 750 modules transformed.
+[2025-12-11T01:25:09.311Z] rendering chunks...
+[2025-12-11T01:25:09.311Z] computing gzip size...
+[2025-12-11T01:25:09.311Z] [2mdist/[22m[32mindex.html                 [39m[1m[2m  0.74 kB[22m[1m[22m[2m │ gzip:  0.41 kB[22m
+[2025-12-11T01:25:09.311Z] [2mdist/[22m[2massets/[22m[35mindex-D8QCnXRh.css  [39m[1m[2m 23.48 kB[22m[1m[22m[2m │ gzip:  5.30 kB[22m
+[2025-12-11T01:25:09.311Z] [2mdist/[22m[2massets/[22m[36mindex-ChZqOzRl.js   [39m[1m[2m245.29 kB[22m[1m[22m[2m │ gzip: 79.60 kB[22m
+[2025-12-11T01:25:09.311Z] [32m✓ built in 5.04s[39m
+[Pipeline] archiveArtifacts
+[2025-12-11T01:25:09.985Z] Archiving artifacts
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Container build & deploy)
+[Pipeline] echo
+[2025-12-11T01:25:10.928Z] Building Docker images for backend and frontend services.
+[Pipeline] sh
+[2025-12-11T01:25:11.287Z] + docker compose -f docker-compose.yml build --parallel
+[2025-12-11T01:25:12.634Z] #0 building with "default" instance using docker driver
+[2025-12-11T01:25:12.634Z] 
+[2025-12-11T01:25:12.634Z] #1 [api internal] load build definition from Dockerfile
+[2025-12-11T01:25:12.634Z] #1 transferring dockerfile: 224B 0.0s done
+[2025-12-11T01:25:12.634Z] #1 DONE 0.1s
+[2025-12-11T01:25:12.634Z] 
+[2025-12-11T01:25:12.634Z] #2 [api internal] load metadata for docker.io/library/node:20-alpine
+[2025-12-11T01:25:14.499Z] #2 DONE 1.8s
+[2025-12-11T01:25:14.500Z] 
+[2025-12-11T01:25:14.500Z] #3 [api internal] load .dockerignore
+[2025-12-11T01:25:14.500Z] #3 transferring context: 160B done
+[2025-12-11T01:25:14.500Z] #3 DONE 0.0s
+[2025-12-11T01:25:14.500Z] 
+[2025-12-11T01:25:14.500Z] #4 [api 1/5] FROM docker.io/library/node:20-alpine@sha256:643e7036aa985317ebfee460005e322aa550c6b6883000d01daefb58689a58e2
+[2025-12-11T01:25:14.500Z] #4 resolve docker.io/library/node:20-alpine@sha256:643e7036aa985317ebfee460005e322aa550c6b6883000d01daefb58689a58e2 0.0s done
+[2025-12-11T01:25:14.500Z] #4 sha256:fb140f51db2dfb99a12ea29ddc933a8719e46501de0295bed8c4c2824d1332cf 1.72kB / 1.72kB done
+[2025-12-11T01:25:14.500Z] #4 sha256:9992b59c17bf27bd13e187f54112049f23f7da7b89343bee73963ae3d6a65fb9 6.52kB / 6.52kB done
+[2025-12-11T01:25:14.500Z] #4 sha256:643e7036aa985317ebfee460005e322aa550c6b6883000d01daefb58689a58e2 7.67kB / 7.67kB done
+[2025-12-11T01:25:14.500Z] #4 DONE 0.2s
+[2025-12-11T01:25:14.500Z] 
+[2025-12-11T01:25:14.500Z] #5 [api internal] load build context
+[2025-12-11T01:25:14.500Z] #5 transferring context: 90.33kB 0.0s done
+[2025-12-11T01:25:14.500Z] #5 DONE 0.0s
+[2025-12-11T01:25:14.751Z] 
+[2025-12-11T01:25:14.751Z] #6 [api 2/5] WORKDIR /app
+[2025-12-11T01:25:14.751Z] #6 DONE 0.0s
+[2025-12-11T01:25:14.751Z] 
+[2025-12-11T01:25:14.751Z] #7 [api 3/5] COPY package.json ./
+[2025-12-11T01:25:14.751Z] #7 DONE 0.1s
+[2025-12-11T01:25:14.751Z] 
+[2025-12-11T01:25:14.751Z] #8 [api 4/5] RUN npm install --production
+[2025-12-11T01:25:16.103Z] #8 1.177 npm warn config production Use `--omit=dev` instead.
+[2025-12-11T01:25:28.211Z] #8 12.78 npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+[2025-12-11T01:25:28.211Z] #8 12.81 npm warn deprecated lodash.isequal@4.5.0: This package is deprecated. Use require('node:util').isDeepStrictEqual instead.
+[2025-12-11T01:25:28.211Z] #8 12.81 npm warn deprecated lodash.get@4.4.2: This package is deprecated. Use the optional chaining (?.) operator instead.
+[2025-12-11T01:25:28.211Z] #8 12.95 npm warn deprecated glob@7.1.6: Glob versions prior to v9 are no longer supported
+[2025-12-11T01:25:30.701Z] #8 15.68 
+[2025-12-11T01:25:30.701Z] #8 15.68 added 138 packages, and audited 139 packages in 15s
+[2025-12-11T01:25:30.701Z] #8 15.68 
+[2025-12-11T01:25:30.701Z] #8 15.68 19 packages are looking for funding
+[2025-12-11T01:25:30.701Z] #8 15.68   run `npm fund` for details
+[2025-12-11T01:25:30.701Z] #8 15.68 
+[2025-12-11T01:25:30.701Z] #8 15.68 found 0 vulnerabilities
+[2025-12-11T01:25:30.701Z] #8 15.69 npm notice
+[2025-12-11T01:25:30.701Z] #8 15.69 npm notice New major version of npm available! 10.8.2 -> 11.7.0
+[2025-12-11T01:25:30.701Z] #8 15.69 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+[2025-12-11T01:25:30.701Z] #8 15.69 npm notice To update run: npm install -g npm@11.7.0
+[2025-12-11T01:25:30.701Z] #8 15.69 npm notice
+[2025-12-11T01:25:30.701Z] #8 DONE 15.8s
+[2025-12-11T01:25:30.701Z] 
+[2025-12-11T01:25:30.701Z] #9 [api 5/5] COPY . .
+[2025-12-11T01:25:30.701Z] #9 DONE 0.1s
+[2025-12-11T01:25:30.702Z] 
+[2025-12-11T01:25:30.702Z] #10 [api] exporting to image
+[2025-12-11T01:25:30.702Z] #10 exporting layers
+[2025-12-11T01:25:32.565Z] #10 exporting layers 1.8s done
+[2025-12-11T01:25:32.565Z] #10 writing image sha256:736cb8a727977fa21d3be9f18c2b2bfa48207c7ccaa02345e29a769e02e1051b done
+[2025-12-11T01:25:32.565Z] #10 naming to docker.io/library/simer-node-demo-api done
+[2025-12-11T01:25:32.565Z] #10 DONE 1.8s
+[2025-12-11T01:25:32.565Z] 
+[2025-12-11T01:25:32.565Z] #11 [api] resolving provenance for metadata file
+[2025-12-11T01:25:32.565Z] #11 DONE 0.1s
+[2025-12-11T01:25:32.816Z] 
+[2025-12-11T01:25:32.816Z] #12 [frontend internal] load build definition from Dockerfile
+[2025-12-11T01:25:32.816Z] #12 transferring dockerfile: 272B done
+[2025-12-11T01:25:32.816Z] #12 DONE 0.0s
+[2025-12-11T01:25:32.816Z] 
+[2025-12-11T01:25:32.816Z] #2 [frontend internal] load metadata for docker.io/library/node:20-alpine
+[2025-12-11T01:25:33.067Z] #2 DONE 2.0s
+[2025-12-11T01:25:33.067Z] 
+[2025-12-11T01:25:33.067Z] #13 [frontend internal] load .dockerignore
+[2025-12-11T01:25:33.067Z] #13 transferring context: 160B done
+[2025-12-11T01:25:33.067Z] #13 DONE 0.0s
+[2025-12-11T01:25:33.067Z] 
+[2025-12-11T01:25:33.067Z] #4 [frontend 1/6] FROM docker.io/library/node:20-alpine@sha256:643e7036aa985317ebfee460005e322aa550c6b6883000d01daefb58689a58e2
+[2025-12-11T01:25:33.067Z] #4 DONE 0.2s
+[2025-12-11T01:25:33.067Z] 
+[2025-12-11T01:25:33.067Z] #14 [frontend internal] load build context
+[2025-12-11T01:25:33.067Z] #14 transferring context: 437.94kB 0.0s done
+[2025-12-11T01:25:33.068Z] #14 DONE 0.1s
+[2025-12-11T01:25:33.068Z] 
+[2025-12-11T01:25:33.068Z] #6 [frontend 2/6] WORKDIR /app
+[2025-12-11T01:25:33.068Z] #6 CACHED
+[2025-12-11T01:25:33.068Z] 
+[2025-12-11T01:25:33.073Z] #15 [frontend 3/6] COPY package.json ./
+[2025-12-11T01:25:33.073Z] #15 DONE 0.1s
+[2025-12-11T01:25:33.325Z] 
+[2025-12-11T01:25:33.328Z] #16 [frontend 4/6] RUN npm install
+[2025-12-11T01:25:59.744Z] #16 24.33 
+[2025-12-11T01:25:59.746Z] #16 24.33 added 158 packages, and audited 159 packages in 24s
+[2025-12-11T01:25:59.746Z] #16 24.33 
+[2025-12-11T01:25:59.746Z] #16 24.33 32 packages are looking for funding
+[2025-12-11T01:25:59.746Z] #16 24.33   run `npm fund` for details
+[2025-12-11T01:25:59.746Z] #16 24.33 npm notice
+[2025-12-11T01:25:59.746Z] #16 24.33 npm notice New major version of npm available! 10.8.2 -> 11.7.0
+[2025-12-11T01:25:59.746Z] #16 24.33 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+[2025-12-11T01:25:59.746Z] #16 24.33 npm notice To update run: npm install -g npm@11.7.0
+[2025-12-11T01:25:59.746Z] #16 24.33 npm notice
+[2025-12-11T01:25:59.746Z] #16 24.34 
+[2025-12-11T01:25:59.746Z] #16 24.34 2 moderate severity vulnerabilities
+[2025-12-11T01:25:59.746Z] #16 24.34 
+[2025-12-11T01:25:59.746Z] #16 24.34 To address all issues (including breaking changes), run:
+[2025-12-11T01:25:59.746Z] #16 24.34   npm audit fix --force
+[2025-12-11T01:25:59.746Z] #16 24.34 
+[2025-12-11T01:25:59.746Z] #16 24.34 Run `npm audit` for details.
+[2025-12-11T01:25:59.746Z] #16 DONE 25.3s
+[2025-12-11T01:25:59.746Z] 
+[2025-12-11T01:25:59.746Z] #17 [frontend 5/6] RUN apk update && apk add xdg-utils
+[2025-12-11T01:25:59.747Z] #17 1.279 v3.23.0-62-g3724f73bda7 [https://dl-cdn.alpinelinux.org/alpine/v3.23/main]
+[2025-12-11T01:25:59.747Z] #17 1.279 v3.23.0-63-gf9f263b884d [https://dl-cdn.alpinelinux.org/alpine/v3.23/community]
+[2025-12-11T01:25:59.747Z] #17 1.279 OK: 27557 distinct packages available
+[2025-12-11T01:26:00.302Z] #17 1.773 ( 1/17) Installing libmagic (5.46-r2)
+[2025-12-11T01:26:00.553Z] #17 2.093 ( 2/17) Installing file (5.46-r2)
+[2025-12-11T01:26:00.804Z] #17 2.103 ( 3/17) Installing libxau (1.0.12-r0)
+[2025-12-11T01:26:00.804Z] #17 2.112 ( 4/17) Installing libmd (1.1.0-r0)
+[2025-12-11T01:26:00.804Z] #17 2.133 ( 5/17) Installing libbsd (0.12.2-r0)
+[2025-12-11T01:26:00.805Z] #17 2.159 ( 6/17) Installing libxdmcp (1.1.5-r1)
+[2025-12-11T01:26:00.805Z] #17 2.168 ( 7/17) Installing libxcb (1.17.0-r1)
+[2025-12-11T01:26:00.805Z] #17 2.326 ( 8/17) Installing libx11 (1.8.12-r1)
+[2025-12-11T01:26:01.356Z] #17 2.910 ( 9/17) Installing xprop (1.2.8-r0)
+[2025-12-11T01:26:01.607Z] #17 2.927 (10/17) Installing libxext (1.3.6-r2)
+[2025-12-11T01:26:01.607Z] #17 2.948 (11/17) Installing libice (1.1.2-r0)
+[2025-12-11T01:26:01.607Z] #17 2.970 (12/17) Installing libuuid (2.41.2-r0)
+[2025-12-11T01:26:01.607Z] #17 2.976 (13/17) Installing libsm (1.2.6-r0)
+[2025-12-11T01:26:01.607Z] #17 2.983 (14/17) Installing libxt (1.3.1-r0)
+[2025-12-11T01:26:01.607Z] #17 3.000 (15/17) Installing libxmu (1.2.1-r0)
+[2025-12-11T01:26:01.607Z] #17 3.009 (16/17) Installing xset (1.2.5-r1)
+[2025-12-11T01:26:01.607Z] #17 3.015 (17/17) Installing xdg-utils (1.2.1-r1)
+[2025-12-11T01:26:01.607Z] #17 3.027 Executing busybox-1.37.0-r29.trigger
+[2025-12-11T01:26:01.607Z] #17 3.043 OK: 25 MiB in 35 packages
+[2025-12-11T01:26:01.607Z] #17 DONE 3.2s
+[2025-12-11T01:26:01.858Z] 
+[2025-12-11T01:26:01.858Z] #18 [frontend 6/6] COPY . .
+[2025-12-11T01:26:01.858Z] #18 DONE 0.2s
+[2025-12-11T01:26:02.109Z] 
+[2025-12-11T01:26:02.109Z] #19 [frontend] exporting to image
+[2025-12-11T01:26:02.109Z] #19 exporting layers
+[2025-12-11T01:26:08.596Z] #19 exporting layers 6.1s done
+[2025-12-11T01:26:08.596Z] #19 writing image sha256:8822e6609fb2244431c375ec616b8922bce1a6e5833051f4f7be1594f2c8a1cd done
+[2025-12-11T01:26:08.596Z] #19 naming to docker.io/library/simer-node-demo-frontend 0.0s done
+[2025-12-11T01:26:08.596Z] #19 DONE 6.1s
+[2025-12-11T01:26:08.596Z] 
+[2025-12-11T01:26:08.596Z] #20 [frontend] resolving provenance for metadata file
+[2025-12-11T01:26:08.596Z] #20 DONE 0.2s
+[Pipeline] echo
+[2025-12-11T01:26:08.894Z] Deploying to EC2 via SSH (docker compose up -d).
+[Pipeline] script
+[Pipeline] {
+[Pipeline] sh
+[2025-12-11T01:26:09.936Z] + git config --get remote.origin.url
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // timestamps
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Also:   org.jenkinsci.plugins.workflow.actions.ErrorAction$ErrorId: ab1a3d0c-95a3-490a-b76d-1ffc32f47295
+java.lang.NoSuchMethodError: No such DSL method 'sshagent' found among steps [archive, bat, build, catchError, checkout, deleteDir, dir, echo, emailext, emailextrecipients, envVarsForTool, error, fileExists, findBuildScans, getContext, git, input, isUnix, junit, library, libraryResource, load, mail, milestone, node, parallel, powershell, properties, publishChecks, pwd, pwsh, readFile, readScmFile, readTrusted, resolveScm, retry, script, sh, sleep, stage, stash, step, timeout, timestamps, tm, tool, unarchive, unstable, unstash, validateDeclarativePipeline, waitForBuild, waitUntil, warnError, withChecks, withContext, withCredentials, withEnv, withGradle, wrap, writeFile, ws] or symbols [GitUsernamePassword, agent, all, allBranchesSame, allOf, always, ant, antFromApache, antOutcome, antTarget, any, anyOf, apiToken, apiTokenProperty, architecture, archiveArtifacts, artifactManager, assembla, authorInChangelog, authorizationMatrix, batchFile, bitbucket, bitbucketServer, booleanParam, branch, brokenBuildSuspects, brokenTestsSuspects, browser, buildButton, buildDiscarder, buildDiscarders, buildRetention, buildSingleRevisionOnly, buildUser, buildingTag, builtInNode, caseInsensitive, caseSensitive, certificate, cgit, changeRequest, changelog, changelogBase, changelogToBranch, changeset, checkoutOption, checkoutToSubdirectory, choice, choiceParam, cleanAfterCheckout, cleanBeforeCheckout, cleanWs, clock, cloneOption, command, computerRetentionCheckInterval, consoleUrlProvider, contributor, cps, credentials, cron, crumb, culprits, dark, darkSystem, default, defaultDisplayUrlProvider, defaultFolderConfiguration, defaultView, demand, developers, disableConcurrentBuilds, disableRestartFromStage, disableResume, discoverOtherRefs, discoverOtherRefsTrait, diskSpace, diskSpaceMonitor, downstream, dumb, durabilityHint, email-ext, envVars, envVarsFilter, environment, equals, experimentalFlags, expression, extendedEmailPublisher, file, fileParam, filePath, fingerprint, fingerprints, firstBuildChangelog, fisheye, frameOptions, freeStyle, freeStyleJob, fromScm, fromSource, git, gitBranchDiscovery, gitHooks, gitHubBranchDiscovery, gitHubBranchHeadAuthority, gitHubExcludeArchivedRepositories, gitHubExcludeForkedRepositories, gitHubExcludePrivateRepositories, gitHubExcludePublicRepositories, gitHubForkDiscovery, gitHubIgnoreDraftPullRequestFilter, gitHubPullRequestDiscovery, gitHubSshCheckout, gitHubTagDiscovery, gitHubTopicsFilter, gitHubTrustContributors, gitHubTrustEveryone, gitHubTrustNobody, gitHubTrustPermissions, gitLab, gitList, gitSCM, gitSource, gitTagDiscovery, gitTool, gitUsernamePassword, gitWeb, gitblit, github, githubProjectProperty, githubPush, gitiles, gogs, gradle, group, headRegexFilter, headWildcardFilter, hyperlink, hyperlinkToModels, ignoreOnPush, inbound, inferOwner, inferRepository, inheriting, inheritingGlobal, installSource, isRestartedRun, jdk, jgit, jgitapache, jnlp, jobBuildDiscarder, jobName, junitTestResultStorage, kiln, label, lastDuration, lastFailure, lastGrantedAuthorities, lastStable, lastSuccess, legacy, legacySCM, lfs, list, local, localBranch, localBranchTrait, location, logRotator, loggedInUsersCanDoAnything, mailer, masterBuild, maven, maven3Mojos, mavenErrors, mavenGlobalConfig, mavenMojos, mavenWarnings, modernSCM, multiBranchProjectDisplayNaming, multibranch, myView, namedBranchesDifferent, node, nodeProperties, nonInheriting, none, nonresumable, not, organizationFolder, overrideIndexTriggers, paneStatus, parallelsAlwaysFailFast, parameters, password, pattern, perBuildTag, permanent, phabricator, pipeline, pipelineGraphView, pipelineTriggers, plainText, plugin, pollSCM, preserveStashes, previous, prism, projectNamingStrategy, proxy, pruneStaleBranch, pruneStaleTag, pruneTags, queueItemAuthenticator, quietPeriod, rateLimit, rateLimitBuilds, recipients, redmine, refSpecs, remoteName, requestor, resourceRoot, responseTime, retainOnlyVariables, rhodeCode, run, runParam, sSHLauncher, schedule, scmGit, scmRetryCount, scriptApproval, scriptApprovalLink, search, security, shell, simpleBuildDiscarder, skipDefaultCheckout, skipStagesAfterUnstable, slave, sourceRegexFilter, sourceWildcardFilter, sparseCheckout, sparseCheckoutPaths, specificRepositories, ssh, sshUserPrivateKey, standard, status, string, stringParam, submodule, submoduleOption, suppressAutomaticTriggering, suppressFolderAutomaticTriggering, swapSpace, tag, teamFoundation, teamSlugFilter, text, textParam, themeManager, timestamper, timestamperConfig, timezone, tmpSpace, toolLocation, triggeredBy, unsecured, untrusted, upstream, upstreamDevelopers, user, userIdentity, userOrGroup, userSeed, usernameColonPassword, usernamePassword, viewgit, viewsTabBar, weather, withAnt, zip] or globals [currentBuild, env, params, pipeline, scm]
+	at PluginClassLoader for workflow-cps//org.jenkinsci.plugins.workflow.cps.DSL.invokeMethod(DSL.java:217)
+	at PluginClassLoader for workflow-cps//org.jenkinsci.plugins.workflow.cps.CpsScript.invokeMethod(CpsScript.java:124)
+	at jdk.internal.reflect.GeneratedMethodAccessor774.invoke(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:98)
+	at groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:325)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1225)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1034)
+	at org.codehaus.groovy.runtime.callsite.PogoMetaClassSite.call(PogoMetaClassSite.java:41)
+	at org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCall(CallSiteArray.java:47)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:116)
+	at PluginClassLoader for script-security//org.kohsuke.groovy.sandbox.impl.Checker$1.call(Checker.java:180)
+	at PluginClassLoader for script-security//org.kohsuke.groovy.sandbox.GroovyInterceptor.onMethodCall(GroovyInterceptor.java:23)
+	at PluginClassLoader for script-security//org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SandboxInterceptor.onMethodCall(SandboxInterceptor.java:163)
+	at PluginClassLoader for script-security//org.kohsuke.groovy.sandbox.impl.Checker$1.call(Checker.java:178)
+	at PluginClassLoader for script-security//org.kohsuke.groovy.sandbox.impl.Checker.checkedCall(Checker.java:182)
+	at PluginClassLoader for script-security//org.kohsuke.groovy.sandbox.impl.Checker.checkedCall(Checker.java:152)
+	at PluginClassLoader for script-security//org.kohsuke.groovy.sandbox.impl.Checker.checkedCall(Checker.java:152)
+	at PluginClassLoader for workflow-cps//com.cloudbees.groovy.cps.sandbox.SandboxInvoker.methodCall(SandboxInvoker.java:17)
+	at PluginClassLoader for workflow-cps//org.jenkinsci.plugins.workflow.cps.LoggingInvoker.methodCall(LoggingInvoker.java:120)
+	at WorkflowScript.run(WorkflowScript:71)
+	at ___cps.transform___(Native Method)
+	at PluginClassLoader for workflow-cps//com.cloudbees.groovy.cps.impl.ContinuationGroup.methodCall(ContinuationGroup.java:107)
+	at PluginClassLoader for workflow-cps//com.cloudbees.groovy.cps.impl.FunctionCallBlock$ContinuationImpl.dispatchOrArg(FunctionCallBlock.java:118)
+	at PluginClassLoader for workflow-cps//com.cloudbees.groovy.cps.impl.FunctionCallBlock$ContinuationImpl.fixArg(FunctionCallBlock.java:87)
+	at jdk.internal.reflect.GeneratedMethodAccessor350.invoke(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at PluginClassLoader for workflow-cps//com.cloudbees.groovy.cps.impl.ContinuationPtr$ContinuationImpl.receive(ContinuationPtr.java:71)
+	at PluginClassLoader for workflow-cps//com.cloudbees.groovy.cps.impl.ClosureBlock.eval(ClosureBlock.java:49)
+	at PluginClassLoader for workflow-cps//com.cloudbees.groovy.cps.Next.step(Next.java:84)
+	at PluginClassLoader for workflow-cps//com.cloudbees.groovy.cps.Continuable.run0(Continuable.java:142)
+	at PluginClassLoader for workflow-cps//org.jenkinsci.plugins.workflow.cps.SandboxContinuable.access$001(SandboxContinuable.java:17)
+	at PluginClassLoader for workflow-cps//org.jenkinsci.plugins.workflow.cps.SandboxContinuable.run0(SandboxContinuable.java:48)
+	at PluginClassLoader for workflow-cps//org.jenkinsci.plugins.workflow.cps.CpsThread.runNextChunk(CpsThread.java:188)
+	at PluginClassLoader for workflow-cps//org.jenkinsci.plugins.workflow.cps.CpsThreadGroup.run(CpsThreadGroup.java:464)
+	at PluginClassLoader for workflow-cps//org.jenkinsci.plugins.workflow.cps.CpsThreadGroup$2.call(CpsThreadGroup.java:372)
+	at PluginClassLoader for workflow-cps//org.jenkinsci.plugins.workflow.cps.CpsThreadGroup$2.call(CpsThreadGroup.java:302)
+	at PluginClassLoader for workflow-cps//org.jenkinsci.plugins.workflow.cps.CpsVmExecutorService.lambda$wrap$4(CpsVmExecutorService.java:143)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at hudson.remoting.SingleLaneExecutorService$1.run(SingleLaneExecutorService.java:139)
+	at jenkins.util.ContextResettingExecutorService$1.run(ContextResettingExecutorService.java:28)
+	at jenkins.security.ImpersonatingExecutorService$1.run(ImpersonatingExecutorService.java:68)
+	at jenkins.util.ErrorLoggingExecutorService.lambda$wrap$0(ErrorLoggingExecutorService.java:51)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at PluginClassLoader for workflow-cps//org.jenkinsci.plugins.workflow.cps.CpsVmExecutorService$1.call(CpsVmExecutorService.java:53)
+	at PluginClassLoader for workflow-cps//org.jenkinsci.plugins.workflow.cps.CpsVmExecutorService$1.call(CpsVmExecutorService.java:50)
+	at org.codehaus.groovy.runtime.GroovyCategorySupport$ThreadCategoryInfo.use(GroovyCategorySupport.java:136)
+	at org.codehaus.groovy.runtime.GroovyCategorySupport.use(GroovyCategorySupport.java:275)
+	at PluginClassLoader for workflow-cps//org.jenkinsci.plugins.workflow.cps.CpsVmExecutorService.lambda$categoryThreadFactory$0(CpsVmExecutorService.java:50)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Finished: FAILURE
