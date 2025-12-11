@@ -5,6 +5,7 @@ import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import api from '../services/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useCart } from '../context/CartContext.jsx';
+import Snowfall from '../components/Snowfall.jsx';
 
 const featuredProducts = [
   {
@@ -98,13 +99,28 @@ const Home = () => {
   };
 
   return (
-    <main>
+    <main className="relative">
+      <Snowfall />
       <section className="hero-section">
         <div className="relative mx-auto flex max-w-6xl flex-col gap-16 px-4 py-16 lg:flex-row lg:items-center lg:py-24">
           <div className="flex-1 space-y-6">
             <span className="badge-soft">
               <SparklesIcon className="h-5 w-5" /> Freshly Brewed Happiness
             </span>
+            <div className="space-y-3">
+              <div className="holiday-banner">
+                <span role="img" aria-label="Santa">🎅</span>
+                <div>
+                  <p className="text-sm font-semibold text-primary">Happy Christmas from Santa Claus!</p>
+                  <p className="text-xs text-muted">Enjoy a gentle snowfall while you explore and place orders without interruptions.</p>
+                </div>
+              </div>
+              <div className="holiday-actions">
+                <span className="holiday-pill">☕ Explore festive brews</span>
+                <span className="holiday-pill">🎁 Claim seasonal rewards</span>
+                <span className="holiday-pill">🚀 Fast-track your pickup</span>
+              </div>
+            </div>
             <h1 className="hero-title text-4xl font-bold text-primary sm:text-5xl lg:text-6xl">
               Crafted coffees, gourmet bites, and a space designed for your best ideas.
             </h1>
