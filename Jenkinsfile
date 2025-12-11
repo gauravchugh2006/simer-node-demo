@@ -109,48 +109,48 @@ pipeline {
       }
     }
 
-    stage('Container build & deploy (main only)') {
-      when {
-        branch 'main'
-      }
-      steps {
-        echo 'Building Docker images for backend and frontend services.'
-        sh 'docker compose -f docker-compose.yml build --parallel'
+    // stage('Container build & deploy (main only)') {
+    //   when {
+    //     branch 'main'
+    //   }
+    //   steps {
+    //     echo 'Building Docker images for backend and frontend services.'
+    //     sh 'docker compose -f docker-compose.yml build --parallel'
 
-        echo 'Deploying to EC2 via SSH (docker compose up -d).'
-        script {
-          def repoUrl = sh(returnStdout: true, script: 'git config --get remote.origin.url').trim()
-          sshagent (credentials: [env.SSH_KEY_CREDENTIALS]) {
-            sh """
-              ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} <<'DEPLOY'
-              set -e
-              echo "Preparing deployment directory on EC2 host."
-              sudo mkdir -p /opt/${COMPOSE_PROJECT_NAME}
-              sudo chown ${EC2_USER}:${EC2_USER} /opt/${COMPOSE_PROJECT_NAME}
-              cd /opt/${COMPOSE_PROJECT_NAME}
+    //     echo 'Deploying to EC2 via SSH (docker compose up -d).'
+    //     script {
+    //       def repoUrl = sh(returnStdout: true, script: 'git config --get remote.origin.url').trim()
+    //       sshagent (credentials: [env.SSH_KEY_CREDENTIALS]) {
+    //         sh """
+    //           ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} <<'DEPLOY'
+    //           set -e
+    //           echo "Preparing deployment directory on EC2 host."
+    //           sudo mkdir -p /opt/${COMPOSE_PROJECT_NAME}
+    //           sudo chown ${EC2_USER}:${EC2_USER} /opt/${COMPOSE_PROJECT_NAME}
+    //           cd /opt/${COMPOSE_PROJECT_NAME}
 
-              if [ ! -d .git ]; then
-                echo "Cloning repository ${repoUrl}."
-                git clone ${repoUrl} .
-              else
-                echo "Refreshing repository from origin/main."
-                git fetch --all --prune
-              fi
+    //           if [ ! -d .git ]; then
+    //             echo "Cloning repository ${repoUrl}."
+    //             git clone ${repoUrl} .
+    //           else
+    //             echo "Refreshing repository from origin/main."
+    //             git fetch --all --prune
+    //           fi
 
-              git checkout main
-              git reset --hard origin/main
+    //           git checkout main
+    //           git reset --hard origin/main
 
-              echo "Launching containers with docker compose."
-              docker compose -f docker-compose.yml pull || true
-              docker compose -f docker-compose.yml up -d --build
+    //           echo "Launching containers with docker compose."
+    //           docker compose -f docker-compose.yml pull || true
+    //           docker compose -f docker-compose.yml up -d --build
 
-              echo "Pruning old Docker resources (safe cleanup)."
-              docker system prune -af --volumes --filter "until=72h" || true
-              DEPLOY
-            """
-          }
-        }
-      }
-    }
+    //           echo "Pruning old Docker resources (safe cleanup)."
+    //           docker system prune -af --volumes --filter "until=72h" || true
+    //           DEPLOY
+    //         """
+    //       }
+    //     }
+    //   }
+    // }
   }
 }
