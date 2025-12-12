@@ -45,6 +45,24 @@ pipeline {
         }
       }
     }
+    // stage('Resolve EC2 Host') {
+    //   steps {
+    //     script {
+    //       def ip = sh(
+    //         script: """
+    //           aws ec2 describe-instances \
+    //             --region ${AWS_REGION} \
+    //             --filters "Name=tag:Project,Values=simer-node-demo" "Name=instance-state-name,Values=running" \
+    //             --query "Reservations[0].Instances[0].PublicIpAddress" \
+    //             --output text
+    //         """,
+    //         returnStdout: true
+    //       ).trim()
+    //       env.EC2_HOST = ip
+    //       echo "[INFO] Resolved EC2_HOST=${env.EC2_HOST}"
+    //     }
+    //   }
+    // }
     stage('Checkout') {
         steps {
             echo "[GIT] Checking out source from main branch."

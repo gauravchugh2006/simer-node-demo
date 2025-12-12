@@ -123,7 +123,7 @@ INSTANCE_ID=$(aws ec2 run-instances \
   --security-group-ids "$SG_ID" \
   --count 1 \
   --region "$AWS_REGION" \
-  --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=simer-node-demo}]" \
+  --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=simer-node-demo},{Key=Project,Value=simer-node-demo},{Key=Env,Value=dev}]" \
   --query "Instances[0].InstanceId" \
   --output text)
 

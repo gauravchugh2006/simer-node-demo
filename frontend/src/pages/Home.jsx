@@ -6,6 +6,7 @@ import api from '../services/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useCart } from '../context/CartContext.jsx';
 import Snowfall from '../components/Snowfall.jsx';
+import IndiaFlag from '../png-india-flag.png';
 
 const featuredProducts = [
   {
@@ -111,7 +112,16 @@ const Home = () => {
               <div className="holiday-banner">
                 <span role="img" aria-label="Santa">🎅</span>
                 <div>
-                  <p className="text-sm font-semibold text-primary">Happy Christmas from Santa Claus India!</p>
+                  <p className="text-sm font-semibold text-primary flex items-center">Happy Christmas from Santa Claus India
+                    <span role="img" aria-label="India Flag" className="ml-1 inline-block text-base">
+                      🇮🇳
+                    </span>
+                    <img 
+                      src={IndiaFlag} 
+                      alt="Indian Flag Icon" 
+                      className="ml-2 h-4 w-6 rounded-sm shadow-sm"
+                    />
+                  !</p>
                   <p className="text-xs text-muted">Enjoy a gentle snowfall while you explore and place orders without interruptions.</p>
                 </div>
               </div>
