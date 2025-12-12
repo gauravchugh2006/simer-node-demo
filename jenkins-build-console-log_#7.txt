@@ -205,9 +205,9 @@ Running on Jenkins in /var/lib/jenkins/workspace/simer-node-demo-pipeline
 [2025-12-12T03:15:35.854Z] 		 Affected argument(s) used the following variable(s): [SSH_KEY_FILE]
 [2025-12-12T03:15:35.854Z] 		 See https://jenkins.io/redirect/groovy-string-interpolation for details.
 [2025-12-12T03:15:36.116Z] /var/lib/jenkins/workspace/simer-node-demo-pipeline@tmp/durable-e98d6d2d/script.sh.copy: line 47: warning: here-document at line 2 delimited by end-of-file (wanted `DEPLOY')
-[2025-12-12T03:15:36.117Z] + ssh -o StrictHostKeyChecking=no -i **** ec2-user@ec2-51-20-66-150.eu-north-1.compute.amazonaws.com
+[2025-12-12T03:15:36.117Z] + ssh -o StrictHostKeyChecking=no -i **** ec2-user@ec2-51-20-96-13.eu-north-1.compute.amazonaws.com
 [2025-12-12T03:15:36.117Z] Pseudo-terminal will not be allocated because stdin is not a terminal.
-[2025-12-12T03:17:57.365Z] ssh: connect to host ec2-51-20-66-150.eu-north-1.compute.amazonaws.com port 22: Connection timed out
+[2025-12-12T03:17:57.365Z] ssh: connect to host ec2-51-20-96-13.eu-north-1.compute.amazonaws.com port 22: Connection timed out
 [Pipeline] }
 [Pipeline] // withCredentials
 [Pipeline] }
