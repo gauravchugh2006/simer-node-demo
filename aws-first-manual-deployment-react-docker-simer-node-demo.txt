@@ -1,4 +1,15 @@
-after creating instance launch create pem file in your root project directory
+Cloud Machine (Ec2) : ec2 is cloud compute machine on public server to deploy and assign private ip and public ip from available DNS on AWS cloud - dnf
+Aws Cli: command line tool used to create ec2 and other user level permission on your ec2
+Nodejs & NPM : as part of your application dependency you need to install 
+Docker & Docker-compose:
+GitHub & Git cli:
+Java 17/18:
+Jenkins:
+
+
+after creating ec2.micro instance launch in eu-north-1 availability zone
+
+create pem file from aws console and copy in your root project directory
 
 check whether you are able to connect your linux/ubuntu base instance from vscode 
 
@@ -244,7 +255,7 @@ Fast-forward
 permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get "http://%2Fvar%2Frun%2Fdocker.sock/v1.46/containers/json?all=1&filters=%7B%22label%22%3A%7B%22com.docker.compose.config-hash%22%3Atrue%2C%22com.docker.compose.project%3Dsimer-node-demo%22%3Atrue%7D%7D": dial unix /var/run/docker.sock: connect: permission denied        
 [ec2-user@ip-172-31-20-171 simer-node-demo]$
 ---------------------------------------
-LOGOUT AND RELOGIN
+LOGOUT AND RELOGIN exit (logout)
 
 ssh -i simer-node-demo-dec2025.pem ec2-user@13.61.178.232
 --- YOU SHOULD SEE OUTPUT LIKE
