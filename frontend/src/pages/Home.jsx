@@ -112,7 +112,7 @@ const Home = () => {
               <div className="holiday-banner">
                 <span role="img" aria-label="Santa">🎅</span>
                 <div>
-                  <p className="text-sm font-semibold text-primary flex items-center">Happy Christmas from Santa Claus India
+                  <p className="text-sm font-semibold text-primary flex items-center">Happy Christmas from Santa Claus France sevran
                     <span role="img" aria-label="India Flag" className="ml-1 inline-block text-base">
                       🇮🇳
                     </span>
