@@ -72,7 +72,7 @@ pipeline {
                 branches: [[name: '*/main']],
                 userRemoteConfigs: [[
                     url: 'https://github.com/gauravchugh2006/simer-node-demo.git',
-                    credentialsId: 'github-token-simer-node-demo'
+                    credentialsId: 'github-jenkins-pat-token'
                 ]]
             ])
         }
