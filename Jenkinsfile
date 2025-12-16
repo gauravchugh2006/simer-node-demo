@@ -124,27 +124,11 @@ pipeline {
           ]) {
             echo "[DEPLOY] Writing backend/.env and frontend/.env for this EC2 host…"
             sh """
-              ssh -o StrictHostKeyChecking=no -i "${SSH_KEY_FILE}" ${EC2_USER}@${EC2_HOST} <<'DEPLOY'
               set -e
 
-              # ---- backend/.env (for dotenv in app.js) ----
-              cat > backend/.env <<EOF
-              NODE_ENV=production
-              PORT=${BACKEND_PORT}
+              ssh -o StrictHostKeyChecking=no -i "\${SSH_KEY_FILE}" ${EC2_USER}@${EC2_HOST} 'bash -se' <<'DEPLOY'
+              set -euo pipefail
 
-              DB_HOST=mysql
-              DB_PORT=${DB_PORT}
-              DB_USER=root
-              DB_PASSWORD=secret
-              DB_NAME=cafe_coffee_day
-
-              ALLOWED_ORIGINS=http://localhost:${FRONTEND_PORT},http://${EC2_HOST}:${FRONTEND_PORT}
-              EOF
-
-              # ---- frontend/.env (Vite) ----
-              cat > frontend/.env <<EOF
-              VITE_API_BASE_URL=http://${EC2_HOST}:${BACKEND_PORT}
-              EOF
               echo "Preparing deployment directory on EC2 host."
               mkdir -p ~/simer-node-demo
               cd ~/simer-node-demo
@@ -174,6 +158,28 @@ pipeline {
                 mv /tmp/simer-node-demo.env.bak .env
               fi
 
+              # Ensure folders exist BEFORE writing env files
+              mkdir -p backend frontend
+
+              # ---- backend/.env (for dotenv in app.js) ----
+              cat > backend/.env <<EOF
+              NODE_ENV=production
+              PORT=${BACKEND_PORT}
+
+              DB_HOST=mysql
+              DB_PORT=${DB_PORT}
+              DB_USER=root
+              DB_PASSWORD=secret
+              DB_NAME=cafe_coffee_day
+
+              ALLOWED_ORIGINS=http://localhost:${FRONTEND_PORT},http://${EC2_HOST}:${FRONTEND_PORT}
+              EOF
+
+                        # ---- frontend/.env (Vite) ----
+                        cat > frontend/.env <<EOF
+              VITE_API_BASE_URL=http://${EC2_HOST}:${BACKEND_PORT}
+              EOF
+
               echo "Copying environment file for frontend (if present)."
               if [ -f .env ]; then
                   cp .env frontend/.env
@@ -193,17 +199,17 @@ pipeline {
               fi
 
               echo "[DEPLOY] Stopping previous containers (if any)…"
-              docker compose -f docker-compose.yml -p "${COMPOSE_PROJECT_NAME}" down -v --remove-orphans || true
+              sudo docker compose -f docker-compose.yml -p "${COMPOSE_PROJECT_NAME}" down -v --remove-orphans || true
 
               echo "[DEPLOY] Launching containers with docker compose."
-              docker compose -f docker-compose.yml pull || true
+              sudo docker compose -f docker-compose.yml pull || true
               echo "[DEPLOY] Building and starting containers..."
-              docker compose -f docker-compose.yml -p "$COMPOSE_PROJECT_NAME" up -d --build
+              sudo docker compose -f docker-compose.yml -p "$COMPOSE_PROJECT_NAME" up -d --build
 
               echo "[DEPLOY] Pruning old Docker resources (safe cleanup)."
-              docker system prune -af --volumes --filter "until=72h" || true
+              sudo docker system prune -af --volumes --filter "until=72h" || true
               echo "[DEPLOY] Current Running containers:"
-              docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Ports}}"
+              sudo docker ps --format "table {{.Names}}\\t{{.Image}}\\t{{.Ports}}"
             """
           }
         }
