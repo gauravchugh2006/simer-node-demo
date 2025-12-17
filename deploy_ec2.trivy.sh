@@ -110,9 +110,11 @@ aws ec2 authorize-security-group-ingress \
 echo "Security group rules added."
 
 ############################################################
-# STEP 3 – Create and Launch EC2 Instance with User-Data (Bootstrap Script)
+# STEP 3 – Create EC2 User-Data (Bootstrap Script)
 ############################################################
-echo "----- STEP 3: Create and Launch EC2 Instance Bootstrap Script -----"
+echo "----- STEP 3: Create EC2 Bootstrap Script -----"
+###############---- START NEW SCRIPT ----###############
+echo "----- STEP 3: Launch EC2 Instance -----"
 
 INSTANCE_ID=$(aws ec2 run-instances \
   --image-id "$AMI_ID" \
@@ -121,25 +123,25 @@ INSTANCE_ID=$(aws ec2 run-instances \
   --security-group-ids "$SG_ID" \
   --count 1 \
   --region "$AWS_REGION" \
-  --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=simer-node-demo},{Key=Project,Value=simer-node-demo},{Key=Env,Value=dev}]" \
+  --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=simer-node-demo}]" \
   --query "Instances[0].InstanceId" \
   --output text)
 
 echo "Instance launched: $INSTANCE_ID"
 
 echo
-echo "----- STEP 4: Wait for EC2 Instance Public IP to be ready -----"
-aws ec2 wait instance-status-ok --instance-ids "$INSTANCE_ID" --region "$AWS_REGION"
+echo "----- STEP 4: Wait for EC2 Public IP -----"
 
-PUBLIC_IP=""
-while [ -z "$PUBLIC_IP" ] || [ "$PUBLIC_IP" = "None" ]; do
-  PUBLIC_IP=$(aws ec2 describe-instances \
-    --instance-id "$INSTANCE_ID" \
-    --region "$AWS_REGION" \
-    --query "Reservations[0].Instances[0].PublicIpAddress" \
-    --output text 2>/dev/null || true)
-  sleep 5
-done
+aws ec2 wait instance-running \
+  --instance-ids "$INSTANCE_ID" \
+  --region "$AWS_REGION"
+
+PUBLIC_IP=$(aws ec2 describe-instances \
+  --instance-ids "$INSTANCE_ID" \
+  --region "$AWS_REGION" \
+  --query "Reservations[0].Instances[0].PublicIpAddress" \
+  --output text)
+
 echo "Public IP: $PUBLIC_IP"
 
 echo
@@ -149,29 +151,10 @@ echo "This will install packages, clone the repo, and run docker compose up -d"
 # Give the OS a few seconds more to finish cloud-init
 sleep 20
 
-echo "----- STEP 5: SSH into EC2 and Install + Deploy -----"
-ssh -o StrictHostKeyChecking=no -i "${KEY_NAME}.pem" ec2-user@"$PUBLIC_IP" << 'REMOTE'
-set -e
-#######################################################
-# 3. Create a 1 GiB swap file (for t3.micro stability) to avoid OOM issue
-#######################################################
-echo "[BOOTSTRAP] Creating 1G swap file..."
-# 0. Create 1G swap to avoid OOM on t3.micro
-if ! sudo grep -q "/swapfile" /etc/fstab; then
-  echo "Creating swapfile..."
-  sudo fallocate -l 1G /swapfile || sudo dd if=/dev/zero of=/swapfile bs=1M count=1024
-  sudo chmod 600 /swapfile
-  sudo mkswap /swapfile
-  sudo swapon /swapfile
-  echo "/swapfile swap swap defaults 0 0" | sudo tee -a /etc/fstab
-else
-  echo "Swap already configured, skipping."
-  sudo swapon /swapfile || true
-fi
+ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+  -i "${KEY_NAME}.pem" ec2-user@"$PUBLIC_IP" << 'REMOTE'
+set -euo pipefail
 
-free -m
-
-# 1. Update system and install dependencies
 echo "[REMOTE] Updating system packages + installing basics..."
 sudo dnf update -y
 
@@ -186,25 +169,13 @@ sudo systemctl enable docker
 sudo systemctl start docker
 
 #######################################################
-# 2. Install Docker Compose plugin (system-wide) (plugin preferred, fallback to standalone)
+# 2. Install Docker Compose plugin (system-wide)
 #######################################################
-echo "[BOOTSTRAP] Installing Docker Compose CLI plugin..."
-if ! docker compose version >/dev/null 2>&1; then
-  COMPOSE_VERSION="v2.29.2"
-  # Try Docker CLI plugin location (works with `docker compose`)
-  PLUGIN_DIR="/usr/libexec/docker/cli-plugins"
-  sudo install -d -m 0755 "$PLUGIN_DIR"
-  echo "[BOOTSTRAP] Downloading docker-compose plugin ($COMPOSE_VERSION) -> $PLUGIN_DIR/docker-compose"
-  if curl -fsSL "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-linux-x86_64" | sudo tee "$PLUGIN_DIR/docker-compose" >/dev/null; then
-    sudo chmod +x "$PLUGIN_DIR/docker-compose"
-  else
-    echo "[BOOTSTRAP] Plugin download failed, trying standalone binary in /usr/local/bin..."
-    sudo curl -fsSL "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
-  fi
-fi
-echo "[BOOTSTRAP] Docker Compose version:"
-docker compose version || docker-compose version
+echo "echo "[BOOTSTRAP] Installing Docker Compose CLI plugin..."
+sudo mkdir -p /usr/libexec/docker/cli-plugins
+sudo curl -fsSL "https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-linux-x86_64" -o /usr/libexec/docker/cli-plugins/docker-compose
+sudo chmod +x /usr/libexec/docker/cli-plugins/docker-compose
+docker compose version || true
 
 echo "[BOOTSTRAP] Installing Trivy (vulnerability scanner)..."
 TRIVY_VERSION="0.55.2"
@@ -218,6 +189,17 @@ trivy --version || true
 echo "[BOOTSTRAP] Pre-downloading Trivy vulnerability DB (speeds up first scan)..."
 # This is best-effort; do not fail bootstrap if Aqua's DB endpoint is slow/unavailable.
 trivy --download-db-only --no-progress || true
+
+
+#######################################################
+# 3. Create a 1 GiB swap file (for t3.micro stability)
+#######################################################
+echo "[BOOTSTRAP] Creating 1G swap file..."
+fallocate -l 1G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=1024
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+grep -q "/swapfile" /etc/fstab || echo '/swapfile swap swap defaults 0 0' >> /etc/fstab
 
 echo "[REMOTE] Adding ec2-user to docker group..."
 if ! groups ec2-user | grep -q docker; then
@@ -240,7 +222,6 @@ EOFJ
 sudo dnf install -y jenkins
 sudo systemctl enable jenkins
 sudo systemctl start jenkins
-
 echo "[REMOTE] Adding 'jenkins' user to 'docker' group..."
 # Allow Jenkins user to talk to Docker
 sudo usermod -aG docker jenkins || true
@@ -258,7 +239,7 @@ sudo -u ec2-user git clone https://github.com/gauravchugh2006/simer-node-demo.gi
 
 cd /home/ec2-user/simer-node-demo
 # Get public IP using IMDSv2
-echo "[REMOTE-BOOTSTRAP] Fetching public IP from instance metadata (IMDSv2)..."
+echo "[BOOTSTRAP] Fetching public IP from instance metadata (IMDSv2)..."
 # ------------------------------
 # 6. Generate .env using IMDSv2 Public IP
 # ------------------------------

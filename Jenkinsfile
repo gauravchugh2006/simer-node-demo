@@ -206,6 +206,20 @@ pipeline {
               echo "[DEPLOY] Building and starting containers..."
               sudo docker compose -f docker-compose.yml -p "$COMPOSE_PROJECT_NAME" up -d --build
 
+              echo "[DEPLOY] Trivy scan (HIGH/CRITICAL) of freshly built images..."
+              if command -v trivy >/dev/null 2>&1; then
+                IMAGES=$(docker images --format '{{.Repository}}:{{.Tag}}' | grep '^simer-node-demo-' || true)
+                if [ -z "$IMAGES" ]; then
+                  echo "[TRIVY] No simer-node-demo-* images found to scan."
+                else
+                  for img in $IMAGES; do
+                    echo "[TRIVY] Scanning $img"
+                    trivy image --no-progress --ignore-unfixed --severity HIGH,CRITICAL --exit-code 1 "$img"
+                  done
+                fi
+              else
+                echo "[TRIVY] trivy not installed on EC2 host; skipping scan (install via deploy_ec2.sh)."
+              fi
               echo "[DEPLOY] Pruning old Docker resources (safe cleanup)."
               sudo docker system prune -af --volumes --filter "until=72h" || true
               echo "[DEPLOY] Current Running containers:"
