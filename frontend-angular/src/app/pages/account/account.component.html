@@ -1,0 +1,64 @@
+<main class="page-section" *ngIf="auth.user; else redirecting">
+  <div class="mx-auto max-w-5xl px-4">
+    <header class="mb-8">
+      <p class="text-sm font-semibold uppercase tracking-wide text-muted">Account</p>
+      <h1 class="section-title">Welcome, {{ displayName }}</h1>
+      <p class="section-subtitle">Update how we reach you across all Cafe Coffee Day experiences.</p>
+    </header>
+
+    <form class="card space-y-6" (ngSubmit)="save()">
+      <div class="grid gap-4 md:grid-cols-2">
+        <div *ngFor="let field of fields" class="flex flex-col gap-2">
+          <label class="form-label" [attr.for]="field.name">{{ field.label }}</label>
+          <input
+            class="form-input"
+            [attr.id]="field.name"
+            [name]="field.name"
+            [type]="field.type"
+            [disabled]="field.disabled"
+            [(ngModel)]="form[field.name]"
+          />
+        </div>
+      </div>
+
+      <div class="grid gap-4 md:grid-cols-2">
+        <div class="flex flex-col gap-2">
+          <label class="form-label" for="permanentAddress">Permanent address</label>
+          <textarea
+            id="permanentAddress"
+            name="permanentAddress"
+            rows="4"
+            class="form-input"
+            [(ngModel)]="form.permanentAddress"
+          ></textarea>
+        </div>
+        <div class="flex flex-col gap-2">
+          <label class="form-label" for="currentAddress">Current address</label>
+          <textarea
+            id="currentAddress"
+            name="currentAddress"
+            rows="4"
+            class="form-input"
+            [(ngModel)]="form.currentAddress"
+          ></textarea>
+        </div>
+      </div>
+
+      <p *ngIf="status" class="text-sm text-accent">{{ status }}</p>
+
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p class="text-sm text-muted">
+          We’ll use these details for receipts, delivery updates, and personalised offers.
+        </p>
+        <button type="submit" class="btn-primary w-full justify-center sm:w-auto">Save changes</button>
+      </div>
+    </form>
+  </div>
+</main>
+<ng-template #redirecting>
+  <main class="page-section">
+    <div class="mx-auto max-w-3xl px-4">
+      <p class="text-sm text-muted">Redirecting...</p>
+    </div>
+  </main>
+</ng-template>

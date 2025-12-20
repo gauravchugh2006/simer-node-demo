@@ -1,0 +1,62 @@
+<main class="page-section">
+  <div class="mx-auto max-w-5xl px-4">
+    <header class="mb-10 text-center">
+      <h1 class="section-title">Track your orders</h1>
+      <p class="section-subtitle">Stay updated with live statuses and create new orders in seconds.</p>
+    </header>
+
+    <section class="card">
+      <h2 class="text-xl font-semibold text-primary">Place a quick order</h2>
+      <p class="mt-1 text-sm text-muted">Comma separate menu items to create a quick order.</p>
+      <form class="mt-4 grid gap-4 md:grid-cols-[2fr,1fr,auto]" (ngSubmit)="submitOrder()">
+        <input
+          type="text"
+          placeholder="Latte, Cocoa Mocha, Spinach Sandwich"
+          [(ngModel)]="items"
+          name="items"
+          required
+          class="form-input"
+        />
+        <input
+          type="number"
+          min="0"
+          step="0.1"
+          placeholder="Total ($)"
+          [(ngModel)]="totalPrice"
+          name="totalPrice"
+          required
+          class="form-input"
+        />
+        <button class="btn-primary" type="submit" [disabled]="loading">
+          {{ loading ? 'Submitting...' : 'Submit' }}
+        </button>
+      </form>
+      <p *ngIf="feedback" class="mt-3 text-sm" [ngClass]="feedback.type === 'error' ? 'text-red-500' : 'text-accent'">
+        {{ feedback.message }}
+      </p>
+    </section>
+
+    <section class="mt-12">
+      <h2 class="text-xl font-semibold text-primary">Recent orders</h2>
+      <p *ngIf="ordersLoading" class="mt-4 text-sm text-muted">Loading orders...</p>
+      <p *ngIf="error" class="mt-4 text-sm text-red-500">{{ error }}</p>
+      <p *ngIf="!ordersLoading && orders.length === 0" class="mt-4 text-sm text-muted">No orders yet. Start by placing your first order above.</p>
+      <div class="mt-6 grid gap-4">
+        <div
+          *ngFor="let order of orders"
+          class="card flex flex-col gap-2 md:flex-row md:items-center md:justify-between"
+        >
+          <div>
+            <p class="text-sm font-semibold text-primary">Order #{{ order.id }}</p>
+            <p class="text-sm text-muted">{{ formatItems(order) }}</p>
+          </div>
+          <div class="flex flex-col gap-1 text-sm text-muted md:text-right">
+            <span class="font-semibold text-accent">${{ totalFor(order) }}</span>
+            <span class="capitalize">Status: {{ order.status }}</span>
+            <span>{{ createdAt(order) }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
