@@ -1,0 +1,38 @@
+<main class="page-section flex min-h-screen items-center justify-center px-4">
+  <div class="card w-full max-w-md">
+    <h1 class="text-2xl font-semibold text-primary">Welcome back</h1>
+    <p class="mt-2 text-sm text-muted">Sign in to manage orders and explore new flavours.</p>
+    <form class="mt-6 space-y-4" (ngSubmit)="submit()">
+      <div>
+        <label class="form-label" for="email">Email</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          required
+          [(ngModel)]="form.email"
+          class="form-input mt-1"
+        />
+      </div>
+      <div>
+        <label class="form-label" for="password">Password</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          required
+          [(ngModel)]="form.password"
+          class="form-input mt-1"
+        />
+      </div>
+      <p *ngIf="error" class="text-sm text-red-500">{{ error }}</p>
+      <button class="btn-primary w-full" [disabled]="loading" type="submit">
+        {{ loading ? 'Signing in...' : 'Sign in' }}
+      </button>
+    </form>
+    <p class="mt-4 text-center text-sm text-muted">
+      New to Cafe Coffee Day?
+      <a routerLink="/register" class="font-semibold text-accent">Create an account</a>
+    </p>
+  </div>
+</main>

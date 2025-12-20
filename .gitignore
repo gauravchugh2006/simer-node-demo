@@ -4,7 +4,9 @@ frontend/.env
 backend/.env
 frontend/node_modules
 backend/node_modules
+frontend-angular/node_modules
 .DS_Store
 .vscode
 backend/package-lock.json
 frontend/package-lock.json
+frontend-angular/package-lock.json
