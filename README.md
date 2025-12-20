@@ -111,7 +111,10 @@ The schema is created automatically when the MySQL container starts for the firs
 
 ## Testing & linting
 
-This starter does not include automated tests. Feel free to integrate your preferred testing framework (Vitest/Jest for frontend, Jest/Supertest for backend) and linting (ESLint/Prettier) as enhancements.
+- **Frontend (Angular + React):** Follow the Jasmine/Karma + Grunt blueprint in [`docs/jasmine-karma-testing.md`](docs/jasmine-karma-testing.md) for TypeScript-first unit tests, headless CI runs, and coverage reporting.
+- **Coverage preview:** Set `COVERAGE_PREVIEW=1` when running `npm test` in `frontend` or `frontend-angular` to automatically open the generated HTML coverage report in headless Chrome.
+- **Backend:** Add Jest/Supertest suites around Express controllers and services; keep fixtures aligned with the OpenAPI/Swagger contract.
+
 
 ## Troubleshooting
 
