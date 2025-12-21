@@ -3,7 +3,7 @@ import { of, throwError } from 'rxjs';
 import { RegisterComponent } from './register.component';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute, provideRouter } from '@angular/router';
 
 describe('RegisterComponent', () => {
   let fixture: ComponentFixture<RegisterComponent>;
@@ -20,6 +20,8 @@ describe('RegisterComponent', () => {
     await TestBed.configureTestingModule({
       imports: [RegisterComponent],
       providers: [
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => null } } } },
         { provide: ApiService, useValue: apiSpy },
         { provide: AuthService, useValue: authSpy },
         { provide: Router, useValue: routerSpy }

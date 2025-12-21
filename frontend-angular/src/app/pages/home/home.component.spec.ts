@@ -1,3 +1,4 @@
+/// <reference types="jasmine" />
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
@@ -70,13 +71,16 @@ describe('HomeComponent', () => {
   });
 
   it('prevents checkout when cart empty', async () => {
-    cartService.cartItems = [];
+    spyOnProperty(cartService, 'cartItems', 'get').and.returnValue([]);
     await component.checkout();
     expect(component.feedback?.type).toBe('info');
   });
 
   it('delegates checkout when items exist', async () => {
-    cartService.cartItems = [{ ...product, quantity: 1, id: 'p1' }];
+    spyOnProperty(cartService, 'cartItems', 'get').and.returnValue([
+      { ...product, quantity: 1, id: 'p1' }
+    ]);
+
     cartService.checkout.and.resolveTo({});
     await component.checkout();
     expect(cartService.checkout).toHaveBeenCalled();

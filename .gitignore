@@ -10,3 +10,6 @@ frontend-angular/node_modules
 backend/package-lock.json
 frontend/package-lock.json
 frontend-angular/package-lock.json
+frontend-angular/.angular/cache
+frontend-angular/dist
+frontend-angular/coverage

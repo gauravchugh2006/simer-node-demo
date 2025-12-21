@@ -16,7 +16,7 @@ const storageKey = 'ccd-cart';
 @Injectable({ providedIn: 'root' })
 export class CartService {
   private readonly itemsSubject = new BehaviorSubject<CartItem[]>(this.readFromStorage());
-  readonly cartItems$ = this.itemsSubject.asObservable();
+  cartItems$ = this.itemsSubject.asObservable();
 
   constructor(private readonly api: ApiService, private readonly auth: AuthService) {
     this.itemsSubject.subscribe((items) => {

@@ -1,5 +1,21 @@
 #!/bin/bash
 set -e
+
+# ---- Windows/Git-Bash safety: auto-fix CRLF line endings (prevents "syntax error near unexpected token `do'") ----
+# If this file has Windows CRLF (\r\n) endings, bash may choke on keywords like "do\r".
+# This self-heals by stripping trailing \r and re-execing the script once.
+if grep -q $'\r' "$0" 2>/dev/null; then
+  echo "[WARN] Detected CRLF line endings in $0. Converting to Unix LF to avoid bash syntax errors..."
+  # Try dos2unix if available; otherwise fallback to sed.
+  if command -v dos2unix >/dev/null 2>&1; then
+    dos2unix "$0" >/dev/null 2>&1 || true
+  else
+    sed -i 's/\r$//' "$0" 2>/dev/null || true
+  fi
+  exec bash "$0" "$@"
+fi
+# -------------------------------------------------------------------------------------------------------------
+
 # Load optional infra defaults
 if [ -f infra.env ]; then
   echo "Loading infra.env..."
@@ -134,7 +150,7 @@ aws ec2 wait instance-status-ok --instance-ids "$INSTANCE_ID" --region "$AWS_REG
 PUBLIC_IP=""
 while [ -z "$PUBLIC_IP" ] || [ "$PUBLIC_IP" = "None" ]; do
   PUBLIC_IP=$(aws ec2 describe-instances \
-    --instance-id "$INSTANCE_ID" \
+    --instance-ids "$INSTANCE_ID" \
     --region "$AWS_REGION" \
     --query "Reservations[0].Instances[0].PublicIpAddress" \
     --output text 2>/dev/null || true)
@@ -258,7 +274,7 @@ sudo -u ec2-user git clone https://github.com/gauravchugh2006/simer-node-demo.gi
 
 cd /home/ec2-user/simer-node-demo
 # Get public IP using IMDSv2
-echo "[REMOTE-BOOTSTRAP] Fetching public IP from instance metadata (IMDSv2)..."
+echo "[BOOTSTRAP] Fetching public IP from instance metadata (IMDSv2)..."
 # ------------------------------
 # 6. Generate .env using IMDSv2 Public IP
 # ------------------------------

@@ -1,21 +1,14 @@
 #!/bin/bash
-set -e
-
-# ---- Windows/Git-Bash safety: auto-fix CRLF line endings (prevents "syntax error near unexpected token `do'") ----
-# If this file has Windows CRLF (\r\n) endings, bash may choke on keywords like "do\r".
-# This self-heals by stripping trailing \r and re-execing the script once.
+# === SELF-HEAL CRLF (Windows -> Linux line endings) ===
+# If this file was saved with CRLF, bash can throw: "syntax error near unexpected token `do'"
 if grep -q $'\r' "$0" 2>/dev/null; then
-  echo "[WARN] Detected CRLF line endings in $0. Converting to Unix LF to avoid bash syntax errors..."
-  # Try dos2unix if available; otherwise fallback to sed.
-  if command -v dos2unix >/dev/null 2>&1; then
-    dos2unix "$0" >/dev/null 2>&1 || true
-  else
-    sed -i 's/\r$//' "$0" 2>/dev/null || true
-  fi
+  echo "[FIX] CRLF detected in $0. Converting to LF and re-running..."
+  # Convert in-place then re-exec
+  sed -i 's/\r$//' "$0"
   exec bash "$0" "$@"
 fi
-# -------------------------------------------------------------------------------------------------------------
 
+set -e
 # Load optional infra defaults
 if [ -f infra.env ]; then
   echo "Loading infra.env..."
@@ -64,66 +57,75 @@ chmod 400 "${KEY_NAME}.pem"
 echo "Key pair saved: ${KEY_NAME}.pem"
 
 ############################################################
-# STEP 2 – Create Security Group + Rules
+# STEP 2 – Create or Reuse Security Group + Rules
 ############################################################
 echo "----- STEP 2: Create or Reuse Security Group -----"
-set +e
-# Delete old SG with same name if it exists
-EXISTING_SG_ID=$(aws ec2 describe-security-groups \
-  --region "$AWS_REGION" \
-  --filters "Name=group-name,Values=$SECURITY_GROUP_NAME" \
-  --query "SecurityGroups[0].GroupId" \
-  --output text 2>/dev/null || true)
-set -e 
 
+# Find existing SG by name (within this region/account)
+set +e
+EXISTING_SG_ID=$(aws ec2 describe-security-groups   --region "$AWS_REGION"   --filters "Name=group-name,Values=$SECURITY_GROUP_NAME"   --query "SecurityGroups[0].GroupId"   --output text 2>/dev/null)
+set -e
+
+# If SG exists, try to delete it (only works if nothing is attached).
+# If deletion fails due to dependencies, we will REUSE the existing SG.
+SG_ID=""
 if [ "$EXISTING_SG_ID" != "None" ] && [ -n "$EXISTING_SG_ID" ]; then
-  echo "Found old security group $EXISTING_SG_ID, deleting..."
-  aws ec2 delete-security-group \
-    --group-id "$EXISTING_SG_ID" \
-    --region "$AWS_REGION" || true
+  echo "Found existing security group $EXISTING_SG_ID."
+  echo "Attempting to delete it (will reuse if AWS reports DependencyViolation)..."
+  set +e
+  DELETE_OUT=$(aws ec2 delete-security-group --group-id "$EXISTING_SG_ID" --region "$AWS_REGION" 2>&1)
+  DELETE_RC=$?
+  set -e
+
+  if [ $DELETE_RC -eq 0 ]; then
+    echo "Deleted old security group: $EXISTING_SG_ID"
+  else
+    if echo "$DELETE_OUT" | grep -q "DependencyViolation"; then
+      echo "Cannot delete SG (DependencyViolation). Reusing: $EXISTING_SG_ID"
+      SG_ID="$EXISTING_SG_ID"
+    else
+      echo "Delete SG failed (will try reuse/create). Details:"
+      echo "$DELETE_OUT"
+      SG_ID="$EXISTING_SG_ID"
+    fi
+  fi
 fi
 
-SG_ID=$(aws ec2 create-security-group \
-  --group-name "$SECURITY_GROUP_NAME" \
-  --description "Security group for simer-node-demo auto deploy" \
-  --region "$AWS_REGION" \
-  --query "GroupId" \
-  --output text)
+# Create SG only if we didn't decide to reuse one
+if [ -z "$SG_ID" ]; then
+  set +e
+  SG_ID=$(aws ec2 create-security-group     --group-name "$SECURITY_GROUP_NAME"     --description "Security group for simer-node-demo auto deploy"     --region "$AWS_REGION"     --query "GroupId"     --output text 2>&1)
+  CREATE_RC=$?
+  set -e
 
-echo "Created SG: $SG_ID"
+  if [ $CREATE_RC -ne 0 ]; then
+    # If it already exists (race condition / previous delete failed), fetch it and continue.
+    if echo "$SG_ID" | grep -q "InvalidGroup.Duplicate"; then
+      echo "Security group name already exists. Fetching existing SG id..."
+      SG_ID=$(aws ec2 describe-security-groups         --region "$AWS_REGION"         --filters "Name=group-name,Values=$SECURITY_GROUP_NAME"         --query "SecurityGroups[0].GroupId"         --output text)
+    else
+      echo "Failed to create security group:"
+      echo "$SG_ID"
+      exit 1
+    fi
+  fi
+fi
+
+echo "Using SG: $SG_ID"
 echo "Adding ingress rules (22, 4000, 5173, 3306, 8080)..."
 
-# SSH
-aws ec2 authorize-security-group-ingress \
-  --group-id "$SG_ID" \
-  --protocol tcp --port 22 --cidr 0.0.0.0/0 \
-  --region "$AWS_REGION"
+# Add rules (ignore duplicates so reruns don't break)
+aws ec2 authorize-security-group-ingress   --group-id "$SG_ID"   --protocol tcp --port 22 --cidr 0.0.0.0/0   --region "$AWS_REGION" >/dev/null 2>&1 || true
 
-# Backend API
-aws ec2 authorize-security-group-ingress \
-  --group-id "$SG_ID" \
-  --protocol tcp --port 4000 --cidr 0.0.0.0/0 \
-  --region "$AWS_REGION"
+aws ec2 authorize-security-group-ingress   --group-id "$SG_ID"   --protocol tcp --port 4000 --cidr 0.0.0.0/0   --region "$AWS_REGION" >/dev/null 2>&1 || true
 
-# Frontend Vite dev server
-aws ec2 authorize-security-group-ingress \
-  --group-id "$SG_ID" \
-  --protocol tcp --port 5173 --cidr 0.0.0.0/0 \
-  --region "$AWS_REGION"
+aws ec2 authorize-security-group-ingress   --group-id "$SG_ID"   --protocol tcp --port 5173 --cidr 0.0.0.0/0   --region "$AWS_REGION" >/dev/null 2>&1 || true
 
-# Jenkins
-aws ec2 authorize-security-group-ingress \
-  --group-id "$SG_ID" \
-  --protocol tcp --port 8080 --cidr 0.0.0.0/0 \
-  --region "$AWS_REGION"
+aws ec2 authorize-security-group-ingress   --group-id "$SG_ID"   --protocol tcp --port 8080 --cidr 0.0.0.0/0   --region "$AWS_REGION" >/dev/null 2>&1 || true
 
-# (Optional) MySQL external – keep only if needed
-aws ec2 authorize-security-group-ingress \
-  --group-id "$SG_ID" \
-  --protocol tcp --port 3306 --cidr 0.0.0.0/0 \
-  --region "$AWS_REGION"
+aws ec2 authorize-security-group-ingress   --group-id "$SG_ID"   --protocol tcp --port 3306 --cidr 0.0.0.0/0   --region "$AWS_REGION" >/dev/null 2>&1 || true
 
-echo "Security group rules added."
+echo "Security group rules ensured."
 
 ############################################################
 # STEP 3 – Create and Launch EC2 Instance with User-Data (Bootstrap Script)

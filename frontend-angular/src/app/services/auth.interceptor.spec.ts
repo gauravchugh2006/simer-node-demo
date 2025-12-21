@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { HTTP_INTERCEPTORS, HttpClient } from '@angular/common/http';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { HttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
+
 import { authInterceptor } from './auth.interceptor';
 import { AuthService } from './auth.service';
 
@@ -8,25 +10,42 @@ describe('authInterceptor', () => {
   let http: HttpClient;
   let httpMock: HttpTestingController;
 
-  beforeEach(() => {
-    const authServiceSpy = jasmine.createSpyObj<AuthService>('AuthService', [], { token: 'abc123' });
+  function setup(token: string | null) {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
       providers: [
-        { provide: AuthService, useValue: authServiceSpy },
-        { provide: HTTP_INTERCEPTORS, useValue: authInterceptor, multi: true }
+        { provide: AuthService, useValue: { token } },
+        provideHttpClient(withInterceptors([authInterceptor])),
+        provideHttpClientTesting()
       ]
     });
+
     http = TestBed.inject(HttpClient);
     httpMock = TestBed.inject(HttpTestingController);
+  }
+
+  afterEach(() => {
+    if (httpMock) httpMock.verify();
   });
 
-  afterEach(() => httpMock.verify());
-
   it('appends Authorization header when token exists', () => {
+    setup('token');
+
     http.get('/secure').subscribe();
+
     const req = httpMock.expectOne('/secure');
-    expect(req.request.headers.get('Authorization')).toBe('Bearer abc123');
+    expect(req.request.headers.get('Authorization')).toBe('Bearer token');
+
+    req.flush({});
+  });
+
+  it('does not append Authorization header when token missing', () => {
+    setup(null);
+
+    http.get('/secure').subscribe();
+
+    const req = httpMock.expectOne('/secure');
+    expect(req.request.headers.has('Authorization')).toBeFalse();
+
     req.flush({});
   });
 });

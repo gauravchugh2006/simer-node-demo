@@ -12,24 +12,27 @@
     "posttest": "node ../scripts/open-coverage.js coverage/frontend-angular/index.html"
   },
   "dependencies": {
-    "@angular/animations": "^18.2.0",
-    "@angular/common": "^18.2.0",
-    "@angular/compiler": "^18.2.0",
-    "@angular/core": "^18.2.0",
-    "@angular/forms": "^18.2.0",
-    "@angular/platform-browser": "^18.2.0",
-    "@angular/platform-browser-dynamic": "^18.2.0",
-    "@angular/router": "^18.2.0",
+    "@angular/animations": "18.2.14",
+    "@angular/common": "18.2.14",
+    "@angular/compiler": "18.2.14",
+    "@angular/core": "18.2.14",
+    "@angular/forms": "18.2.14",
+    "@angular/platform-browser": "18.2.14",
+    "@angular/platform-browser-dynamic": "18.2.14",
+    "@angular/router": "18.2.14",
     "rxjs": "~7.8.1",
     "tslib": "^2.6.3",
     "zone.js": "~0.14.10"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^18.2.0",
-    "@angular/cli": "^18.2.0",
-    "@angular/compiler-cli": "^18.2.0",
+    "@angular-devkit/build-angular": "18.2.14",
+    "@angular/cli": "18.2.14",
+    "@angular/compiler-cli": "18.2.14",
     "@types/chrome": "^0.0.267",
     "@types/jasmine": "~5.1.0",
+    "@types/jest": "^30.0.0",
+    "@types/mocha": "^10.0.10",
+    "autoprefixer": "^10.4.20",
     "chrome-launcher": "^1.1.1",
     "jasmine-core": "~5.2.0",
     "karma": "~6.4.3",
@@ -37,9 +40,8 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "typescript": "~5.5.4",
-    "tailwindcss": "^3.4.14",
     "postcss": "^8.4.47",
-    "autoprefixer": "^10.4.20"
+    "tailwindcss": "^3.4.14",
+    "typescript": "5.4.5"
   }
 }
