@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "karma start karma.conf.cjs --single-run",
+    "test:watch": "karma start karma.conf.cjs",
+    "posttest": "node ../scripts/open-coverage.js coverage/index.html"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.18",
@@ -17,8 +20,19 @@
     "react-router-dom": "^6.28.0"
   },
   "devDependencies": {
+    "@testing-library/react": "^16.0.1",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.20",
+    "chrome-launcher": "^1.1.1",
+    "esbuild": "^0.23.0",
+    "esbuild-plugin-istanbul": "^0.2.3",
+    "jasmine-core": "^5.2.0",
+    "karma": "^6.4.3",
+    "karma-chrome-launcher": "^3.2.0",
+    "karma-coverage": "^2.2.0",
+    "karma-esbuild": "^6.0.0",
+    "karma-jasmine": "^5.1.0",
+    "karma-junit-reporter": "^2.0.1",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.14",
     "vite": "^5.4.8"

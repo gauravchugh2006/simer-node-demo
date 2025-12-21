@@ -7,7 +7,9 @@
     "start": "ng serve",
     "build": "ng build",
     "lint": "ng lint",
-    "test": "ng test"
+    "test": "ng test --code-coverage --browsers=ChromeHeadless --watch=false",
+    "test:watch": "ng test --code-coverage --browsers=Chrome --watch=true",
+    "posttest": "node ../scripts/open-coverage.js coverage/frontend-angular/index.html"
   },
   "dependencies": {
     "@angular/animations": "^18.2.0",
@@ -26,7 +28,9 @@
     "@angular-devkit/build-angular": "^18.2.0",
     "@angular/cli": "^18.2.0",
     "@angular/compiler-cli": "^18.2.0",
+    "@types/chrome": "^0.0.267",
     "@types/jasmine": "~5.1.0",
+    "chrome-launcher": "^1.1.1",
     "jasmine-core": "~5.2.0",
     "karma": "~6.4.3",
     "karma-chrome-launcher": "~3.2.0",
