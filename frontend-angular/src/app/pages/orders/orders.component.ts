@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -19,6 +19,7 @@ export class OrdersComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly ordersService = inject(OrdersService);
+  private readonly destroyRef = inject(DestroyRef);
 
   items = '';
   totalPrice = '';
@@ -35,11 +36,11 @@ export class OrdersComponent implements OnInit {
     }
 
     this.ordersLoading = true;
-    this.ordersService.orders$.pipe(takeUntilDestroyed()).subscribe((records) => {
+    this.ordersService.orders$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((records) => {
       this.orders = records;
       this.ordersLoading = false;
     });
-    this.ordersService.error$.pipe(takeUntilDestroyed()).subscribe((message) => {
+    this.ordersService.error$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((message) => {
       this.error = message;
     });
     this.ordersService.fetchOrders(Boolean(this.auth.token));

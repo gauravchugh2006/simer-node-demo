@@ -124,7 +124,7 @@
                   min="1"
                   class="form-input w-20 text-center"
                   [value]="item.quantity"
-                  (input)="updateQuantity(item.id, ($event.target as HTMLInputElement).valueAsNumber)"
+                  (input)="updateQuantity(item.id, $any($event.target).valueAsNumber)"
                 />
                 <button
                   type="button"
