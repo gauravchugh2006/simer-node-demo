@@ -3,30 +3,31 @@ import { of, throwError } from 'rxjs';
 import { RegisterComponent } from './register.component';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
-import { Router, ActivatedRoute, provideRouter } from '@angular/router';
+import { Router } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('RegisterComponent', () => {
   let fixture: ComponentFixture<RegisterComponent>;
   let component: RegisterComponent;
   let apiSpy: jasmine.SpyObj<ApiService>;
   let authSpy: jasmine.SpyObj<AuthService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let router: Router;
+  let navigateSpy: jasmine.Spy;
 
   beforeEach(async () => {
     apiSpy = jasmine.createSpyObj('ApiService', ['post']);
     authSpy = jasmine.createSpyObj('AuthService', ['login']);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [RegisterComponent],
+      imports: [RouterTestingModule, RegisterComponent],
       providers: [
-        provideRouter([]),
-        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => null } } } },
         { provide: ApiService, useValue: apiSpy },
-        { provide: AuthService, useValue: authSpy },
-        { provide: Router, useValue: routerSpy }
+        { provide: AuthService, useValue: authSpy }
       ]
     }).compileComponents();
+
+    router = TestBed.inject(Router);
+    navigateSpy = spyOn(router, 'navigate');
 
     fixture = TestBed.createComponent(RegisterComponent);
     component = fixture.componentInstance;
@@ -37,7 +38,7 @@ describe('RegisterComponent', () => {
     apiSpy.post.and.returnValue(of({ user: { email: 'user@test.com' }, token: 'abc' }));
     await component.submit();
     expect(authSpy.login).toHaveBeenCalled();
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/']);
+    expect(navigateSpy).toHaveBeenCalledWith(['/']);
   });
 
   it('sets error on failure', async () => {

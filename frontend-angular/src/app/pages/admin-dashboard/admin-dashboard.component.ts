@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -18,6 +18,7 @@ export class AdminDashboardComponent implements OnInit {
   private readonly ordersService = inject(OrdersService);
   private readonly api = inject(ApiService);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   orders: OrderRecord[] = [];
   loading = false;
@@ -37,13 +38,13 @@ export class AdminDashboardComponent implements OnInit {
 
     this.loading = true;
     this.ordersService.orders$
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((records) => {
         this.orders = records;
         this.loading = false;
       });
     this.ordersService.error$
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((message) => (this.error = message));
     this.ordersService.fetchOrders(Boolean(this.auth.token));
   }
