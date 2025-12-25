@@ -1,4 +1,27 @@
-const istanbul = require('esbuild-plugin-istanbul');
+const { createInstrumenter } = require('istanbul-lib-instrument');
+const fs = require('fs');
+const path = require('path');
+
+const istanbulPlugin = () => ({
+  name: 'istanbul-instrumenter',
+  setup(build) {
+    const instrumenter = createInstrumenter({ esModules: true, produceSourceMap: true });
+
+    build.onLoad({ filter: /\.[jt]sx?$/ }, async (args) => {
+      const source = await fs.promises.readFile(args.path, 'utf8');
+      const instrumented = instrumenter.instrumentSync(source, args.path);
+      const map = instrumenter.lastSourceMap();
+
+      const ext = path.extname(args.path);
+      let loader = 'js';
+      if (ext === '.jsx') loader = 'jsx';
+      else if (ext === '.ts') loader = 'ts';
+      else if (ext === '.tsx') loader = 'tsx';
+
+      return { contents: instrumented, loader, sourcemap: map };
+    });
+  }
+});
 
 module.exports = function (config) {
   config.set({
@@ -12,7 +35,7 @@ module.exports = function (config) {
       target: 'es2020',
       jsx: 'automatic',
       sourcemap: 'inline',
-      plugins: [istanbul()]
+      plugins: [istanbulPlugin()]
     },
     reporters: ['progress', 'coverage', 'junit'],
     coverageReporter: {
