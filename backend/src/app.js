@@ -12,7 +12,8 @@ import { logError } from './utils/logger.js';
 dotenv.config();
 
 // 1. Build allowed origins from env instead of hardcoding IPs
-const defaultOrigins = ['http://localhost:5173'];
+// Include backend origin so Swagger UI at :4000 can call the APIs locally.
+const defaultOrigins = ['http://localhost:5173', 'http://localhost:4000'];
 
 const envOrigins = [];
 
