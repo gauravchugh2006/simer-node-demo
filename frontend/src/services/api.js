@@ -6,14 +6,16 @@ const resolveBaseUrl = () => {
   }
 
   if (typeof window !== 'undefined') {
-    const { protocol, hostname } = window.location;
-    const port = import.meta.env.VITE_API_PORT || '4000';
+    const { protocol, hostname, port } = window.location;
+    const explicitPort = import.meta.env.VITE_API_PORT;
 
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return `${protocol}//${hostname}:${port}`;
+      const targetPort = explicitPort || '4000';
+      return `${protocol}//${hostname}:${targetPort}`;
     }
 
-    return `${protocol}//${hostname}${port ? `:${port}` : ''}`;
+    const targetPort = explicitPort ?? port;
+    return `${protocol}//${hostname}${targetPort ? `:${targetPort}` : ''}`;
   }
 
   return 'http://localhost:4000';
