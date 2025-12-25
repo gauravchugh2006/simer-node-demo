@@ -29,18 +29,24 @@ export class ApiService {
     if (typeof window !== 'undefined') {
       const explicit = (window as { __env?: { API_BASE_URL?: string } }).__env?.API_BASE_URL;
       if (explicit) {
+        console.info('[ApiService] Using explicit window.__env.API_BASE_URL', explicit);
         return explicit;
       }
 
       const { protocol, hostname } = window.location;
       const apiPort = (window as { __env?: { API_PORT?: string } }).__env?.API_PORT || '4000';
       if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        console.info('[ApiService] Detected local environment; using port', apiPort);
         return `${protocol}//${hostname}:${apiPort}`;
       }
 
-      return `${protocol}//${hostname}${apiPort ? `:${apiPort}` : ''}`;
+      const resolved = `${protocol}//${hostname}${apiPort ? `:${apiPort}` : ''}`;
+      console.info('[ApiService] Resolved API base URL from window.location', resolved);
+      return resolved;
     }
 
-    return 'http://localhost:4000';
+    const fallback = 'http://localhost:4000';
+    console.warn('[ApiService] window is undefined; defaulting API base URL to', fallback);
+    return fallback;
   }
 }
