@@ -41,8 +41,8 @@
         </div>
         <div *ngIf="feedback" class="feedback-pill">
           <span class="material-symbols-outlined h-4 w-4" [ngClass]="{
-            'text-accent': feedback?.type === 'success',
-            'text-red-500': feedback?.type === 'error'
+            'text-accent': feedback.type === 'success',
+            'text-red-500': feedback.type === 'error'
           }">
             {{ feedback.type === 'success' ? 'check_circle' : feedback.type === 'error' ? 'error' : 'star' }}
           </span>
