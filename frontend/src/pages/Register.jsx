@@ -24,8 +24,30 @@ const Register = () => {
       login(data);
       navigate('/');
     } catch (err) {
-      console.error('Registration failed', err);
-      setError(err.response?.data?.message || 'Unable to register.');
+      const debugPayload = {
+        message: err?.message,
+        code: err?.code,
+        status: err?.response?.status,
+        responseData: err?.response?.data,
+        requestUrl: err?.config?.url,
+        baseURL: api.defaults.baseURL
+      };
+
+      console.error('Registration failed', debugPayload);
+
+      let friendly = 'Unable to register.';
+      if (err?.response?.data?.message) {
+        friendly = `Registration failed: ${err.response.data.message}`;
+      } else if (err?.response?.status) {
+        friendly = `Registration failed with status ${err.response.status}. Please try again.`;
+      } else if (err?.request) {
+        const host = typeof window !== 'undefined' ? window.location.hostname : 'this device';
+        friendly = `Cannot reach the API at ${api.defaults.baseURL}. Verify the backend is running and accessible from ${host}.`;
+      } else if (err?.message) {
+        friendly = `Registration error: ${err.message}`;
+      }
+
+      setError(friendly);
     } finally {
       setLoading(false);
     }

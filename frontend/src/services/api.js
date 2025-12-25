@@ -4,6 +4,14 @@ const isLocalHost = (hostname) => ['localhost', '127.0.0.1', '::1'].includes(hos
 
 const resolveBaseUrl = () => {
   const envBase = import.meta.env.VITE_API_BASE_URL;
+  const explicitPort = import.meta.env.VITE_API_PORT || '4000';
+
+  // If we're running the SPA locally (e.g., docker-compose or `npm run dev`),
+  // always talk to the local API port, even if the env file contains a remote
+  // hostname from a previous deployment.
+  if (typeof window !== 'undefined' && isLocalHost(window.location.hostname)) {
+    return `${window.location.protocol}//${window.location.hostname}:${explicitPort}`;
+  }
 
   if (envBase) {
     if (typeof window !== 'undefined') {
@@ -12,7 +20,7 @@ const resolveBaseUrl = () => {
         // If the env var still points to localhost but the app is served from a
         // public/remote host, use the current host so API calls don't time out.
         if (isLocalHost(parsed.hostname) && !isLocalHost(window.location.hostname)) {
-          const fallbackPort = parsed.port || import.meta.env.VITE_API_PORT || '4000';
+          const fallbackPort = parsed.port || explicitPort;
           return `${window.location.protocol}//${window.location.hostname}:${fallbackPort}`;
         }
       } catch (error) {
@@ -23,23 +31,18 @@ const resolveBaseUrl = () => {
   }
 
   if (typeof window !== 'undefined') {
-    const { protocol, hostname, port } = window.location;
-    const explicitPort = import.meta.env.VITE_API_PORT;
-
-    if (isLocalHost(hostname)) {
-      const targetPort = explicitPort || '4000';
-      return `${protocol}//${hostname}:${targetPort}`;
-    }
-
-    const targetPort = explicitPort ?? port;
-    return `${protocol}//${hostname}${targetPort ? `:${targetPort}` : ''}`;
+    const { protocol, hostname } = window.location;
+    return `${protocol}//${hostname}:${explicitPort}`;
   }
 
-  return 'http://localhost:4000';
+  return `http://localhost:${explicitPort}`;
 };
 
+const resolvedBaseUrl = resolveBaseUrl();
+console.info('[API] Using base URL:', resolvedBaseUrl);
+
 const api = axios.create({
-  baseURL: resolveBaseUrl()
+  baseURL: resolvedBaseUrl
 });
 
 api.interceptors.request.use((config) => {
