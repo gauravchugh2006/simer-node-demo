@@ -15,7 +15,7 @@
             [attr.id]="field.name"
             [name]="field.name"
             [type]="field.type"
-            [disabled]="field.disabled"
+            [disabled]="field.disabled ?? false"
             [(ngModel)]="form[field.name]"
           />
         </div>

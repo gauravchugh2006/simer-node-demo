@@ -4,7 +4,26 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService, UserProfile } from '../../services/auth.service';
 
-const fields = [
+type EditableField =
+  | 'firstName'
+  | 'lastName'
+  | 'phone'
+  | 'email'
+  | 'address'
+  | 'city'
+  | 'state'
+  | 'pinCode';
+
+type EditableProfile = Record<EditableField, string>;
+
+interface Field {
+  readonly name: EditableField;
+  readonly label: string;
+  readonly type: string;
+  readonly disabled?: boolean;
+}
+
+const fields: ReadonlyArray<Field> = [
   { name: 'firstName', label: 'First name', type: 'text' },
   { name: 'lastName', label: 'Last name', type: 'text' },
   { name: 'phone', label: 'Phone number', type: 'tel' },
@@ -13,7 +32,7 @@ const fields = [
   { name: 'city', label: 'City', type: 'text' },
   { name: 'state', label: 'State', type: 'text' },
   { name: 'pinCode', label: 'Pin code', type: 'text' }
-] as const;
+];
 
 @Component({
   selector: 'app-account',
@@ -25,7 +44,7 @@ export class AccountComponent implements OnInit {
   readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
-  form: UserProfile = {
+  form: EditableProfile & UserProfile = {
     firstName: '',
     lastName: '',
     phone: '',
