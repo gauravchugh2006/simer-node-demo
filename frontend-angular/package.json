@@ -34,6 +34,7 @@
     "@types/mocha": "^10.0.10",
     "autoprefixer": "^10.4.20",
     "chrome-launcher": "^1.1.1",
+    "puppeteer": "^23.7.0",
     "jasmine-core": "~5.2.0",
     "karma": "~6.4.3",
     "karma-chrome-launcher": "~3.2.0",
