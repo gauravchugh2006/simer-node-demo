@@ -7,6 +7,8 @@ import { CartItem, CartService } from '../../services/cart.service';
 import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
 import { Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('HomeComponent', () => {
   let fixture: ComponentFixture<HomeComponent>;
@@ -30,12 +32,13 @@ describe('HomeComponent', () => {
     router = jasmine.createSpyObj<Router>('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [HomeComponent],
+      imports: [HomeComponent, RouterTestingModule],
       providers: [
         { provide: CartService, useValue: cartService },
         { provide: AuthService, useValue: authService },
         { provide: ApiService, useValue: apiService },
-        { provide: Router, useValue: router }
+        { provide: Router, useValue: router },
+        { provide: ActivatedRoute, useValue: { snapshot: { params: {} } } }
       ],
       schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
