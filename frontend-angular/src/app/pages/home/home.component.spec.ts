@@ -29,8 +29,11 @@ describe('HomeComponent', () => {
     ]);
     Object.defineProperty(cartService, 'cartItems', { get: () => [], configurable: true });
     Object.defineProperty(cartService, 'cartTotal', { get: () => 0, configurable: true });
-    authService = jasmine.createSpyObj<AuthService>('AuthService', []);
-    Object.defineProperty(authService, 'token', { get: () => 'token', configurable: true });
+    authService = jasmine.createSpyObj<AuthService>(
+      'AuthService',
+      ['login', 'logout', 'updateProfile'],
+      { token: 'token' }
+    );
     apiService = jasmine.createSpyObj<ApiService>('ApiService', ['post']);
 
     await TestBed.configureTestingModule({
@@ -58,7 +61,7 @@ describe('HomeComponent', () => {
   });
 
   it('navigates to login when not authenticated on buy now', async () => {
-    Object.defineProperty(authService, 'token', { value: null });
+    spyOnProperty(authService, 'token', 'get').and.returnValue(null);
     await component.buyNow(product);
     expect(router.navigate).toHaveBeenCalledWith(['/login']);
   });
