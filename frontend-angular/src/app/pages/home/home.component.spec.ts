@@ -26,8 +26,11 @@ describe('HomeComponent', () => {
       'checkout',
       'updateQuantity',
       'removeFromCart'
-    ], { cartItems: [] as CartItem[], cartTotal: 0 });
-    authService = jasmine.createSpyObj<AuthService>('AuthService', [], { token: 'token' });
+    ]);
+    Object.defineProperty(cartService, 'cartItems', { get: () => [], configurable: true });
+    Object.defineProperty(cartService, 'cartTotal', { get: () => 0, configurable: true });
+    authService = jasmine.createSpyObj<AuthService>('AuthService', []);
+    Object.defineProperty(authService, 'token', { get: () => 'token', configurable: true });
     apiService = jasmine.createSpyObj<ApiService>('ApiService', ['post']);
 
     await TestBed.configureTestingModule({
