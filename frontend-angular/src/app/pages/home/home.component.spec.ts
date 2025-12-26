@@ -16,7 +16,7 @@ describe('HomeComponent', () => {
   let cartService: jasmine.SpyObj<CartService>;
   let authService: jasmine.SpyObj<AuthService>;
   let apiService: jasmine.SpyObj<ApiService>;
-  let router: jasmine.SpyObj<Router>;
+  let router: Router;
 
   const product = { id: 'p1', name: 'Latte', description: '', price: 4 };
 
@@ -29,7 +29,6 @@ describe('HomeComponent', () => {
     ], { cartItems: [] as CartItem[], cartTotal: 0 });
     authService = jasmine.createSpyObj<AuthService>('AuthService', [], { token: 'token' });
     apiService = jasmine.createSpyObj<ApiService>('ApiService', ['post']);
-    router = jasmine.createSpyObj<Router>('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
       imports: [HomeComponent, RouterTestingModule],
@@ -37,7 +36,6 @@ describe('HomeComponent', () => {
         { provide: CartService, useValue: cartService },
         { provide: AuthService, useValue: authService },
         { provide: ApiService, useValue: apiService },
-        { provide: Router, useValue: router },
         { provide: ActivatedRoute, useValue: { snapshot: { params: {} } } }
       ],
       schemas: [NO_ERRORS_SCHEMA]
@@ -45,6 +43,8 @@ describe('HomeComponent', () => {
 
     fixture = TestBed.createComponent(HomeComponent);
     component = fixture.componentInstance;
+    router = TestBed.inject(Router);
+    spyOn(router, 'navigate');
     fixture.detectChanges();
   });
 
