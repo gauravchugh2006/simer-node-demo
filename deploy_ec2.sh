@@ -25,6 +25,13 @@ if [ -f infra.env ]; then
   set +a
 fi
 
+# Avoid AWS CLI trying to pipe output to a pager (often "more" on Windows),
+# which breaks in Git-Bash/MINGW.
+export AWS_PAGER=""
+
+# Convenience alias: always disable pager explicitly.
+AWS="aws --no-cli-pager"
+
 ############################################################
 # CONFIG
 ############################################################
@@ -43,7 +50,7 @@ echo "----- STEP 1: Create Key Pair -----"
 
 # Delete existing key pair in AWS and locally (if any)
 set +e
-aws ec2 delete-key-pair \
+$AWS ec2 delete-key-pair \
   --key-name "$KEY_NAME" \
   --region "$AWS_REGION" >/dev/null 2>&1 || true
 
@@ -54,7 +61,7 @@ fi
 set -e
 
 # Create fresh key pair
-aws ec2 create-key-pair \
+$AWS ec2 create-key-pair \
   --key-name "$KEY_NAME" \
   --query "KeyMaterial" \
   --output text \
@@ -69,7 +76,7 @@ echo "Key pair saved: ${KEY_NAME}.pem"
 echo "----- STEP 2: Create or Reuse Security Group -----"
 set +e
 # Delete old SG with same name if it exists
-EXISTING_SG_ID=$(aws ec2 describe-security-groups \
+EXISTING_SG_ID=$($AWS ec2 describe-security-groups \
   --region "$AWS_REGION" \
   --filters "Name=group-name,Values=$SECURITY_GROUP_NAME" \
   --query "SecurityGroups[0].GroupId" \
@@ -78,12 +85,12 @@ set -e
 
 if [ "$EXISTING_SG_ID" != "None" ] && [ -n "$EXISTING_SG_ID" ]; then
   echo "Found old security group $EXISTING_SG_ID, deleting..."
-  aws ec2 delete-security-group \
+  $AWS ec2 delete-security-group \
     --group-id "$EXISTING_SG_ID" \
     --region "$AWS_REGION" || true
 fi
 
-SG_ID=$(aws ec2 create-security-group \
+SG_ID=$($AWS ec2 create-security-group \
   --group-name "$SECURITY_GROUP_NAME" \
   --description "Security group for simer-node-demo auto deploy" \
   --region "$AWS_REGION" \
@@ -94,31 +101,31 @@ echo "Created SG: $SG_ID"
 echo "Adding ingress rules (22, 4000, 5173, 3306, 8080)..."
 
 # SSH
-aws ec2 authorize-security-group-ingress \
+$AWS ec2 authorize-security-group-ingress \
   --group-id "$SG_ID" \
   --protocol tcp --port 22 --cidr 0.0.0.0/0 \
   --region "$AWS_REGION"
 
 # Backend API
-aws ec2 authorize-security-group-ingress \
+$AWS ec2 authorize-security-group-ingress \
   --group-id "$SG_ID" \
   --protocol tcp --port 4000 --cidr 0.0.0.0/0 \
   --region "$AWS_REGION"
 
 # Frontend Vite dev server
-aws ec2 authorize-security-group-ingress \
+$AWS ec2 authorize-security-group-ingress \
   --group-id "$SG_ID" \
   --protocol tcp --port 5173 --cidr 0.0.0.0/0 \
   --region "$AWS_REGION"
 
 # Jenkins
-aws ec2 authorize-security-group-ingress \
+$AWS ec2 authorize-security-group-ingress \
   --group-id "$SG_ID" \
   --protocol tcp --port 8080 --cidr 0.0.0.0/0 \
   --region "$AWS_REGION"
 
 # (Optional) MySQL external – keep only if needed
-aws ec2 authorize-security-group-ingress \
+$AWS ec2 authorize-security-group-ingress \
   --group-id "$SG_ID" \
   --protocol tcp --port 3306 --cidr 0.0.0.0/0 \
   --region "$AWS_REGION"
@@ -130,7 +137,7 @@ echo "Security group rules added."
 ############################################################
 echo "----- STEP 3: Create and Launch EC2 Instance Bootstrap Script -----"
 
-INSTANCE_ID=$(aws ec2 run-instances \
+INSTANCE_ID=$($AWS ec2 run-instances \
   --image-id "$AMI_ID" \
   --instance-type "$INSTANCE_TYPE" \
   --key-name "$KEY_NAME" \
@@ -145,11 +152,11 @@ echo "Instance launched: $INSTANCE_ID"
 
 echo
 echo "----- STEP 4: Wait for EC2 Instance Public IP to be ready -----"
-aws ec2 wait instance-status-ok --instance-ids "$INSTANCE_ID" --region "$AWS_REGION"
+$AWS ec2 wait instance-status-ok --instance-ids "$INSTANCE_ID" --region "$AWS_REGION"
 
 PUBLIC_IP=""
 while [ -z "$PUBLIC_IP" ] || [ "$PUBLIC_IP" = "None" ]; do
-  PUBLIC_IP=$(aws ec2 describe-instances \
+PUBLIC_IP=$($AWS ec2 describe-instances \
     --instance-ids "$INSTANCE_ID" \
     --region "$AWS_REGION" \
     --query "Reservations[0].Instances[0].PublicIpAddress" \
@@ -232,8 +239,16 @@ rm -f "$TMP_TRIVY" /tmp/trivy
 trivy --version || true
 
 echo "[BOOTSTRAP] Pre-downloading Trivy vulnerability DB (speeds up first scan)..."
-# This is best-effort; do not fail bootstrap if Aqua's DB endpoint is slow/unavailable.
-trivy --download-db-only --no-progress || true
+# Trivy has changed flags across versions; make this best-effort and compatible.
+# Goal: warm the DB/cache so the first real scan is faster.
+if trivy --help 2>&1 | grep -q -- "--download-db-only"; then
+  trivy --download-db-only --no-progress || true
+elif trivy image --help 2>&1 | grep -q -- "--download-db-only"; then
+  trivy image --download-db-only --no-progress || true
+else
+  # Fallback: scan a tiny image quietly to trigger DB download.
+  trivy image --quiet --no-progress alpine:3.19 || true
+fi
 
 echo "[REMOTE] Adding ec2-user to docker group..."
 if ! groups ec2-user | grep -q docker; then

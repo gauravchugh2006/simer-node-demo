@@ -1,0 +1,126 @@
+micro system 8gb
+ 4gb OS related system Linux
+
+ 4gb nodejs, npm, docker, Jenkins etc. installed
+
+
+ 4gb - 2gb = 2gb
+
+
+ 1gb - > 100mb threshold
+	 200mb	warning threshold
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+class Program
+{
+    public static void LinqDrivenParsing2(string orderby, int topRecords)
+    {
+        string fileName = "pp-monthly-update-new-version.csv";
+        string projectRoot = Directory.GetParent(AppContext.BaseDirectory).Parent.Parent.Parent.FullName;
+        string filePath = Path.Combine(projectRoot, fileName);
+
+        var results1 = File.ReadAllLines(filePath)
+        .Select(line => line.Split(','))
+        .Where(cols => cols.Length >= 4 && !string.IsNullOrWhiteSpace(cols[3])).ToList();
+        var results2 = results1
+        .Select(cols => new {
+            Prefix = cols[3].Trim('"').Split(' ')[0],
+            Price = int.TryParse(cols[1].Trim('"'), out int price) ? price : 0
+        }).ToList();
+        var results = results2.GroupBy(x => x.Prefix)
+        .Select(g => new {
+            Prefix = g.Key,
+            Average = g.Average(x => x.Price)
+        });
+
+        // Apply sorting
+        if (orderby.Equals("desc", StringComparison.OrdinalIgnoreCase))
+            results = results.OrderByDescending(r => r.Average);
+        else
+            results = results.OrderBy(r => r.Average);
+
+        // Take top N
+        var final = results.Take(topRecords);
+
+        Console.WriteLine("Prefix\tAverage");
+        foreach (var item in final)
+        {
+            Console.WriteLine($"{item.Prefix}\t{item.Average:F0}");
+        }
+
+    }
+    public static void LinqDrivenParsing1(string orderby, int topRec)
+    {
+
+        string fileName = "pp-monthly-update-new-version.csv";
+        string projectRoot = Directory.GetParent(AppContext.BaseDirectory).Parent.Parent.Parent.FullName;
+        string filePath = Path.Combine(projectRoot, fileName);
+
+        var lines = File.ReadAllLines(filePath);
+
+        var prefixGroups = new Dictionary<string, List<int>>();
+
+        foreach (var line in lines)
+        {
+            var columns = line.Split(',');
+            if (columns.Length < 4 || string.IsNullOrWhiteSpace(columns[3])) continue;
+
+            string postcode = columns[3].Trim('"');
+            string prefix = postcode.Split(' ')[0];
+            if (!int.TryParse(columns[1].Trim('"'), out int price)) continue;
+
+            if (!prefixGroups.ContainsKey(prefix))
+                prefixGroups[prefix] = new List<int>();
+
+            prefixGroups[prefix].Add(price);
+        }
+
+        Console.WriteLine("Prefix\tAverage");
+        foreach (var kvp in prefixGroups)
+        {
+            double average = kvp.Value.Average();
+            Console.WriteLine($"{kvp.Key}\t{average:F0}");
+        }
+
+    }
+    public static void Main(string[] args)
+    {
+        LinqDrivenParsing2("desc", 10);   // top 10 highest averages
+                                            // LinqDrivenCsvParsing("asc", 10); // top 10 lowest averages
+
+        string fileName = "pp-monthly-update-new-version.csv";
+        string projectRoot = Directory.GetParent(AppContext.BaseDirectory).Parent.Parent.Parent.FullName;
+        string filePath = Path.Combine(projectRoot, fileName);
+        
+        var lines = File.ReadAllLines(filePath);
+
+        var prefixGroups = new Dictionary<string, List<int>>();
+
+        foreach (var line in lines)
+        {
+            var columns = line.Split(',');
+            if (columns.Length < 4 || string.IsNullOrWhiteSpace(columns[3])) continue;
+
+            string postcode = columns[3].Trim('"');
+            string prefix = postcode.Split(' ')[0];
+            if (!int.TryParse(columns[1].Trim('"'), out int price)) continue;
+
+            if (!prefixGroups.ContainsKey(prefix))
+                prefixGroups[prefix] = new List<int>();
+
+            prefixGroups[prefix].Add(price);
+        }
+
+        Console.WriteLine("Prefix\tAverage");
+        foreach (var kvp in prefixGroups)
+        {
+            double average = kvp.Value.Average();
+            Console.WriteLine($"{kvp.Key}\t{average:F0}");
+        }
+        Console.ReadLine();
+    }
+}
